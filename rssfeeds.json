@@ -12,9 +12,21 @@
         "outlet": "Washington Post"
     },
     {
-        "url": "http://hosted.ap.org/lineups/TOPHEADS.rss?SITE=PAREA&SECTION=HOME",
+        "url": "http://hosted.ap.org/lineups/TOPHEADS.rss?SITE=AP&SECTION=HOME",
         "outlet": "AP"
     },
+    {
+		"url": "http://hosted.ap.org/lineups/USHEADS.rss?SITE=AP&SECTION=HOME",
+		"outlet": "AP"
+    },
+	{
+		"url": "http://hosted.ap.org/lineups/WORLDHEADS.rss?SITE=AP&SECTION=HOME",
+		"outlet": "AP"
+	},
+	{
+		"url": "http://hosted.ap.org/lineups/POLITICSHEADS.rss?SITE=AP&SECTION=HOME",
+		"outlet": "AP"
+	},
     {
         "url": "http://www.latimes.com/rss2.0.xml",
         "outlet": "LA Times"

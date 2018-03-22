@@ -54,7 +54,7 @@ def get_twitter_creds():
 
 def get_twitter_instance():
     app_key, app_secret, oauth_token, oauth_token_secret = get_twitter_creds()
-    
+
     return Twython(app_key, app_secret, oauth_token, oauth_token_secret)
 
 def twitter_upload(imgs, twitter):
@@ -151,7 +151,7 @@ def main():
 
     for feed in rss_feeds:
         outlet = feed['outlet']
-        url = feed['url'] 
+        url = feed['url']
         articles = parse_feed(outlet, url)
 
         articles = [article for article in articles if article.url not in recent_urls]

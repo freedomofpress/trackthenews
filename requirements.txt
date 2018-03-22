@@ -1,0 +1,7 @@
+feedparser==5.2.1
+html2text==2018.1.9
+Pillow==5.0.0
+pyaml==17.12.1
+readability-lxml==0.6.2
+requests==2.18.4
+twython==3.6.0

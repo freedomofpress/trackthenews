@@ -125,7 +125,7 @@ def parse_feed(outlet, url):
 
     for entry in feed['entries']:
         url = entry['link']
-        if outlet == 'ProPublica':
+        if outlet in ['ProPublica', 'Reuters']:
             res = requests.get(url)
             url = res.url
         elif outlet == 'New York Times' and '/video/' in url:

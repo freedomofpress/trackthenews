@@ -128,6 +128,8 @@ def parse_feed(outlet, url):
         if outlet in ['ProPublica', 'Reuters']:
             res = requests.get(url)
             url = res.url
+            if outlet == 'Reuters':
+                url = url.split('?')[0]
         elif outlet == 'New York Times' and '/video/' in url:
             continue
 

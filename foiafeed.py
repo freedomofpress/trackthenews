@@ -7,20 +7,23 @@ import feedparser
 import html2text
 import os
 import requests
+import sqlite3
 import textwrap
 import time
 import yaml
+from datetime import datetime
 from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont
 from readability import Document
 from twython import Twython
 
+# Comparison happens in lowercase, so no uppercase letters here!
 FOIA_PHRASES = [
-'F.O.I.A.',
-'FOIA',
-'Freedom of Information Act',
+'f.o.i.a.',
+'foia',
 'freedom of information act',
-'Foia',
+'freedom of information law',
+'records request',
 'open records',
 'public records']
 
@@ -76,10 +79,10 @@ def tweet_article(article, twitter):
 
     twitter.update_status(status=status, media_ids=media_ids)
 
-def render_img(graf):
+def render_img(graf, width=70):
     # Take a paragraph of text and return an Image object that consists of that text rendered onto a plain background.
 
-    wrapped_list = textwrap.wrap(graf)
+    wrapped_list = textwrap.wrap(graf, width)
     wrapped = '\n'.join(wrapped_list)
 
     blank_im = Image.new('RGB', (0,0))
@@ -143,10 +146,17 @@ def main():
         'LA Times':'http://www.latimes.com/rss2.0.xml'}
     
     twitter = get_twitter_instance()
+    db = os.path.join(fullpath, CONFIG['db'])
+    conn = sqlite3.connect(db)
+
+    recent_urls = [entry[0] for entry in list(conn.execute(
+        'select url from articles order by id desc'))]
 
     for outlet in rss_urls:
         url = rss_urls[outlet]
         articles = parse_feed(outlet, url)
+
+        articles = [article for article in articles if article.url not in recent_urls]
         
         for counter, article in enumerate(articles, 1):
             res = requests.get(article.url)
@@ -160,17 +170,31 @@ def main():
             plaintext_grafs = plaintext_article.split('\n')
             
             for graf in plaintext_grafs:
-                if any(phrase in graf for phrase in FOIA_PHRASES):
+                if any(phrase in graf.lower() for phrase in FOIA_PHRASES):
                     article.matching_grafs.append(graf)
 
             if article.matching_grafs:
-                for graf in article.matching_grafs[:4]:
+                print("Got one!")
+                if len(article.matching_grafs) == 1:
                     article.imgs.append(render_img(graf))
+                else:
+                    for graf in article.matching_grafs[:4]:
+                        article.imgs.append(render_img(graf, width=40))
 
                 tweet_article(article, twitter)
                 article.tweeted = True
 
+            conn.execute("""
+                insert into articles(title, outlet, url, tweeted, recorded_at)
+                values (?, ?, ?, ?, ?)""",
+                (article.title, article.outlet, article.url, article.tweeted, 
+                datetime.utcnow()))
+
+            conn.commit()
+
             time.sleep(1)
+
+    conn.close()
 
 if __name__ == '__main__':
     main()

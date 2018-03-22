@@ -16,17 +16,17 @@
         "outlet": "AP"
     },
     {
-		"url": "http://hosted.ap.org/lineups/USHEADS.rss?SITE=AP&SECTION=HOME",
-		"outlet": "AP"
+        "url": "http://hosted.ap.org/lineups/USHEADS.rss?SITE=AP&SECTION=HOME",
+        "outlet": "AP"
     },
-	{
-		"url": "http://hosted.ap.org/lineups/WORLDHEADS.rss?SITE=AP&SECTION=HOME",
-		"outlet": "AP"
-	},
-	{
-		"url": "http://hosted.ap.org/lineups/POLITICSHEADS.rss?SITE=AP&SECTION=HOME",
-		"outlet": "AP"
-	},
+    {
+        "url": "http://hosted.ap.org/lineups/WORLDHEADS.rss?SITE=AP&SECTION=HOME",
+        "outlet": "AP"
+    },
+    {
+        "url": "http://hosted.ap.org/lineups/POLITICSHEADS.rss?SITE=AP&SECTION=HOME",
+        "outlet": "AP"
+    },
     {
         "url": "http://www.latimes.com/rss2.0.xml",
         "outlet": "LA Times"

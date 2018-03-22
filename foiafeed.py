@@ -5,6 +5,7 @@
 
 import feedparser
 import html2text
+import json
 import os
 import requests
 import sqlite3
@@ -29,6 +30,7 @@ FOIA_PHRASES = [
 
 fullpath = os.path.dirname(os.path.realpath(__file__))
 CONFIGFILE = os.path.join(fullpath, 'config.yaml')
+RSSFEEDFILE = os.path.join(fullpath, 'rssfeeds.json')
 
 with open(CONFIGFILE, 'r') as c:
     CONFIG = yaml.load(c)
@@ -136,24 +138,20 @@ def parse_feed(outlet, url):
     return articles
 
 def main():
-    rss_urls = {
-        'AP':'http://hosted.ap.org/lineups/TOPHEADS.rss?SITE=PAREA&SECTION=HOME',
-        'New York Times':
-            'http://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml',
-        'Washington Post':'http://feeds.washingtonpost.com/rss/national',
-        'ProPublica':'http://feeds.propublica.org/propublica/main',
-        'Buzzfeed':'https://www.buzzfeed.com/usnews.xml',
-        'LA Times':'http://www.latimes.com/rss2.0.xml'}
-    
-    twitter = get_twitter_instance()
     db = os.path.join(fullpath, CONFIG['db'])
     conn = sqlite3.connect(db)
 
     recent_urls = [entry[0] for entry in list(conn.execute(
-        'select url from articles order by id desc'))]
+        'select url from articles order by id desc limit 1000'))]
 
-    for outlet in rss_urls:
-        url = rss_urls[outlet]
+    twitter = get_twitter_instance()
+    
+    with open(RSSFEEDFILE, 'r') as f:
+        rss_feeds = json.load(f)
+
+    for feed in rss_feeds:
+        outlet = feed['outlet']
+        url = feed['url'] 
         articles = parse_feed(outlet, url)
 
         articles = [article for article in articles if article.url not in recent_urls]
@@ -170,16 +168,14 @@ def main():
             plaintext_grafs = plaintext_article.split('\n')
             
             for graf in plaintext_grafs:
-                if any(phrase in graf.lower() for phrase in FOIA_PHRASES):
+                if any(phrase.lower() in graf.lower() for phrase in FOIA_PHRASES):
                     article.matching_grafs.append(graf)
 
             if article.matching_grafs:
                 print("Got one!")
-                if len(article.matching_grafs) == 1:
-                    article.imgs.append(render_img(graf))
-                else:
-                    for graf in article.matching_grafs[:4]:
-                        article.imgs.append(render_img(graf, width=40))
+                width = 60 if len(article.matching_grafs) == 1 else 35
+                for graf in article.matching_grafs[:4]:
+                    article.imgs.append(render_img(graf, width))
 
                 tweet_article(article, twitter)
                 article.tweeted = True

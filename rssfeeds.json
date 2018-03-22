@@ -1,0 +1,38 @@
+[
+    {
+        "url": "https://www.buzzfeed.com/usnews.xml",
+        "outlet": "Buzzfeed"
+    },
+    {
+        "url": "http://feeds.washingtonpost.com/rss/national",
+        "outlet": "Washington Post" 
+    },
+    {
+        "url": "http://feeds.washingtonpost.com/rss/politics",
+        "outlet": "Washington Post"
+    },
+    {
+        "url": "http://hosted.ap.org/lineups/TOPHEADS.rss?SITE=PAREA&SECTION=HOME",
+        "outlet": "AP"
+    },
+    {
+        "url": "http://www.latimes.com/rss2.0.xml",
+        "outlet": "LA Times"
+    },
+    {
+        "url": "http://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
+        "outlet": "New York Times"
+    },
+    {
+        "url": "http://feeds.propublica.org/propublica/main",
+        "outlet": "ProPublica"
+    },
+    {
+        "url": "https://theintercept.com/feed/?lang=en",
+        "outlet": "The Intercept"
+    },
+    {
+        "url": "https://www.themarshallproject.org/rss/recent.rss",
+        "outlet": "The Marshall Project"
+    }
+]

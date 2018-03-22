@@ -34,5 +34,16 @@
     {
         "url": "https://www.themarshallproject.org/rss/recent.rss",
         "outlet": "The Marshall Project"
+    },
+        "url": "http://feeds.reuters.com/Reuters/domesticNews",
+        "outlet": "Reuters"
+    },
+    {
+        "url": "http://feeds.reuters.com/reuters/topNews",
+        "outlet": "Reuters"
+    },
+    {
+        "url": "http://feeds.reuters.com/Reuters/PoliticsNews",
+        "outlet": "Reuters"
     }
 ]

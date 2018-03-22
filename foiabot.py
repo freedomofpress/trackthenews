@@ -85,8 +85,8 @@ def render_img(graf):
     blank_im = Image.new('RGB', (0,0))
     blank_d = ImageDraw.Draw(blank_im)
 
-    font_path = os.path.join(fullpath, 'fonts', 'LiberationSerif-Regular.ttf')
-    fnt = ImageFont.truetype(font_path, size=36)
+    font_name = 'LiberationSerif-Regular.ttf'
+    fnt = ImageFont.truetype(font_name, size=36)
 
     textsize = blank_d.multiline_textsize(wrapped, font=fnt, spacing=12)
     border = 60 

@@ -105,6 +105,10 @@ def render_img(graf, width=70):
 
     return im
 
+def decruft_url(url):
+    url = url.split('?')[0].split('#')[0]
+    return url
+
 def clean_article(doc):
     # Take a Readability doc and return a long string corresponding to the plain text of that article.
 
@@ -128,10 +132,9 @@ def parse_feed(outlet, url):
         if outlet in ['ProPublica', 'Reuters']:
             res = requests.get(url)
             url = res.url
-            if outlet == 'Reuters':
-                url = url.split('?')[0]
         elif outlet == 'New York Times' and '/video/' in url:
             continue
+        url = decruft_url(url)
 
         title = entry['title']
 

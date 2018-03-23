@@ -134,7 +134,9 @@ def parse_feed(outlet, url):
             url = res.url
         elif outlet == 'New York Times' and '/video/' in url:
             continue
-        url = decruft_url(url)
+
+        if outlet not in ['AP']:
+            url = decruft_url(url)
 
         title = entry['title']
 

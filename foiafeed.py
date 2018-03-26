@@ -26,7 +26,8 @@ FOIA_PHRASES = [
 'freedom of information law',
 'records request',
 'open records',
-'public records']
+'public records act',
+'public records law']
 
 fullpath = os.path.dirname(os.path.realpath(__file__))
 CONFIGFILE = os.path.join(fullpath, 'config.yaml')

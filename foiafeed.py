@@ -131,7 +131,8 @@ def parse_feed(outlet, url):
         url = entry['link']
         if outlet in ['ProPublica', 'Reuters']:
             res = requests.head(url, allow_redirects=True)
-            url = res.headers['location'] if 'location' in headers else res.url
+            url = res.headers['location'] if 'location' in res.headers \
+                else res.url
         elif outlet == 'New York Times' and '/video/' in url:
             continue
 

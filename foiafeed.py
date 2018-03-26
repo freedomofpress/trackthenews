@@ -150,9 +150,6 @@ def main():
     db = os.path.join(fullpath, CONFIG['db'])
     conn = sqlite3.connect(db)
 
-    recent_urls = [entry[0] for entry in list(conn.execute(
-        'select url from articles order by id desc limit 1000'))]
-
     twitter = get_twitter_instance()
     
     with open(RSSFEEDFILE, 'r') as f:
@@ -162,6 +159,10 @@ def main():
         outlet = feed['outlet']
         url = feed['url']
         articles = parse_feed(outlet, url)
+
+        recent_urls = [entry[0] for entry in list(conn.execute(
+            'select url from articles where outlet=? \
+             order by id desc limit 1000', (outlet,)))]
 
         articles = [article for article in articles if article.url not in recent_urls]
         

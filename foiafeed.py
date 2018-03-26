@@ -80,7 +80,7 @@ class Article:
                 img_io.seek(0)
                 res = twitter.upload_media(media=img_io)
 
-                self.media_ids.append(res['media_id'])
+                media_ids.append(res['media_id'])
             except:
                 pass
 

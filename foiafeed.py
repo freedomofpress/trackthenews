@@ -56,9 +56,20 @@ class Article:
         if self.outlet not in ['AP']:
             self.url = decruft_url(self.url)
 
+    def clean(self):
+        res = requests.get(self.url)
+        doc = Document(res.text)
+
+        h = html2text.HTML2Text()
+        h.ignore_links = True
+        h.ignore_emphasis = True
+        h.body_width = 0
+
+        self.plaintext = h.handle(doc.summary())
+
     def check_for_matches(self):
-        plaintext = clean_article(self)
-        plaintext_grafs = plaintext.split('\n')
+        self.clean()
+        plaintext_grafs = self.plaintext.split('\n')
 
         for graf in plaintext_grafs:
             if any(phrase.lower() in graf.lower() for phrase in FOIA_PHRASES):
@@ -70,7 +81,7 @@ class Article:
             self.imgs.append(render_img(graf, width))
 
         twitter = get_twitter_instance()
-        
+
         media_ids = []
 
         for img in self.imgs:
@@ -125,19 +136,6 @@ def decruft_url(url):
     url = url.split('?')[0].split('#')[0]
     return url
 
-def clean_article(article):
-    # Take a Readability doc and return a long string corresponding to the plain text of that article.
-    res = requests.get(article.url)
-    doc = Document(res.text)
-
-    h = html2text.HTML2Text()
-    h.ignore_links = True
-    h.ignore_emphasis = True
-    h.body_width = 0
-
-    article_plaintext = h.handle(doc.summary())
-    return article_plaintext
-
 def parse_feed(outlet, url):
     # Take the URL of an RSS feed and return a list of Article objects
 
@@ -173,7 +171,7 @@ def main():
             'select url from articles where outlet=? \
              order by id desc limit 1000', (outlet,)))]
 
-        articles = [a for a in articles if a.url not in recent_urls]
+        articles = [a for a in articles if a.url and a.url not in recent_urls]
         
         for counter, article in enumerate(articles, 1):
 

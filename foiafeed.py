@@ -41,48 +41,63 @@ class Article:
         self.outlet = outlet
         self.title = title
         self.url = url
+        self.canonicalize_url()
+
         self.matching_grafs = []
         self.imgs = []
         self.tweeted = False
 
-def get_twitter_creds():
-    twitter_app_key = CONFIG['twitter_app_key']
-    twitter_app_secret = CONFIG['twitter_app_secret']
-    twitter_oauth_token = CONFIG['twitter_oauth_token']
-    twitter_oauth_token_secret = CONFIG['twitter_oauth_token_secret']
+    def canonicalize_url(self):
+        if self.outlet in ['ProPublica', 'Reuters']:
+            res = requests.head(self.url, allow_redirects=True)
+            self.url = res.headers['location'] if 'location' in res.headers \
+                else res.url
 
-    return twitter_app_key, twitter_app_secret, twitter_oauth_token, twitter_oauth_token_secret
+        if self.outlet not in ['AP']:
+            self.url = decruft_url(self.url)
+
+    def check_for_matches(self):
+        plaintext = clean_article(self)
+        plaintext_grafs = plaintext.split('\n')
+
+        for graf in plaintext_grafs:
+            if any(phrase.lower() in graf.lower() for phrase in FOIA_PHRASES):
+                self.matching_grafs.append(graf)
+
+    def tweet(self):
+        width = 60 if len(self.matching_grafs) == 1 else 35
+        for graf in self.matching_grafs[:4]:
+            self.imgs.append(render_img(graf, width))
+
+        twitter = get_twitter_instance()
+        
+        media_ids = []
+
+        for img in self.imgs:
+            try:
+                img_io = BytesIO()
+                img.save(img_io, format='jpeg', quality=95)
+                img_io.seek(0)
+                res = twitter.upload_media(media=img_io)
+
+                self.media_ids.append(res['media_id'])
+            except:
+                pass
+
+        status = self.outlet + ": " + self.title + " " + self.url
+        twitter.update_status(status=status, media_ids=media_ids)
+
+        self.tweeted = True
 
 def get_twitter_instance():
-    app_key, app_secret, oauth_token, oauth_token_secret = get_twitter_creds()
+    app_key = CONFIG['twitter_app_key']
+    app_secret = CONFIG['twitter_app_secret']
+    oauth_token = CONFIG['twitter_oauth_token']
+    oauth_token_secret = CONFIG['twitter_oauth_token_secret']
 
     return Twython(app_key, app_secret, oauth_token, oauth_token_secret)
 
-def twitter_upload(imgs, twitter):
-    # Take a list of Image objects and return a list of Twitter media_ids
-    media_ids = []
-
-    for img in imgs:
-        try:
-            img_io = BytesIO()
-            img.save(img_io, format='jpeg', quality=95)
-            img_io.seek(0)
-            res = twitter.upload_media(media=img_io)
-
-            media_ids.append(res['media_id'])
-        except:
-            pass
-
-    return media_ids
-
-def tweet_article(article, twitter):
-    # Take an Article object, upload its images, and post it to Twitter
-    media_ids = twitter_upload(article.imgs, twitter)
-    status = article.outlet + ": " + article.title + " " + article.url
-
-    twitter.update_status(status=status, media_ids=media_ids)
-
-def render_img(graf, width=70):
+def render_img(graf, width=60):
     # Take a paragraph of text and return an Image object that consists of that text rendered onto a plain background.
 
     wrapped_list = textwrap.wrap(graf, width)
@@ -110,16 +125,18 @@ def decruft_url(url):
     url = url.split('?')[0].split('#')[0]
     return url
 
-def clean_article(doc):
+def clean_article(article):
     # Take a Readability doc and return a long string corresponding to the plain text of that article.
+    res = requests.get(article.url)
+    doc = Document(res.text)
 
     h = html2text.HTML2Text()
     h.ignore_links = True
     h.ignore_emphasis = True
     h.body_width = 0
 
-    plaintext_article = h.handle(doc.summary())
-    return plaintext_article
+    article_plaintext = h.handle(doc.summary())
+    return article_plaintext
 
 def parse_feed(outlet, url):
     # Take the URL of an RSS feed and return a list of Article objects
@@ -129,20 +146,12 @@ def parse_feed(outlet, url):
     articles = []
 
     for entry in feed['entries']:
-        url = entry['link']
-        if outlet in ['ProPublica', 'Reuters']:
-            res = requests.head(url, allow_redirects=True)
-            url = res.headers['location'] if 'location' in res.headers \
-                else res.url
-        elif outlet == 'New York Times' and '/video/' in url:
-            continue
-
-        if outlet not in ['AP']:
-            url = decruft_url(url)
-
         title = entry['title']
+        url = entry['link']
 
-        articles.append(Article(outlet, title, url))
+        article = Article(outlet, title, url)
+
+        articles.append(article)
 
     return articles
 
@@ -164,31 +173,17 @@ def main():
             'select url from articles where outlet=? \
              order by id desc limit 1000', (outlet,)))]
 
-        articles = [article for article in articles if article.url not in recent_urls]
+        articles = [a for a in articles if a.url not in recent_urls]
         
         for counter, article in enumerate(articles, 1):
-            res = requests.get(article.url)
-            doc = Document(res.text)
-
-            plaintext_article = clean_article(doc)
-            matching_grafs = []
 
             print("Checking {} article {}/{}".format(article.outlet, counter, len(articles)))
-
-            plaintext_grafs = plaintext_article.split('\n')
             
-            for graf in plaintext_grafs:
-                if any(phrase.lower() in graf.lower() for phrase in FOIA_PHRASES):
-                    article.matching_grafs.append(graf)
+            article.check_for_matches()
 
             if article.matching_grafs:
                 print("Got one!")
-                width = 60 if len(article.matching_grafs) == 1 else 35
-                for graf in article.matching_grafs[:4]:
-                    article.imgs.append(render_img(graf, width))
-
-                tweet_article(article, twitter)
-                article.tweeted = True
+                article.tweet()
 
             conn.execute("""
                 insert into articles(title, outlet, url, tweeted, recorded_at)

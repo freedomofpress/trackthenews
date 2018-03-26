@@ -114,13 +114,15 @@ def render_img(graf, width=60):
     wrapped_list = textwrap.wrap(graf, width)
     wrapped = '\n'.join(wrapped_list)
 
-    blank_im = Image.new('RGB', (0,0))
-    blank_d = ImageDraw.Draw(blank_im)
-
     font_name = 'LiberationSerif-Regular.ttf'
     fnt = ImageFont.truetype(font_name, size=36)
+    spacing = 12 # Just a nice spacing number, visually
 
-    textsize = blank_d.multiline_textsize(wrapped, font=fnt, spacing=12)
+    line_spacing = fnt.getsize('A')[1] + spacing
+    text_width = max(fnt.getsize(line)[0] for line in wrapped_list)
+
+    textsize = text_width, line_spacing * len(wrapped_list)
+
     border = 60 
 
     size = tuple(side + border * 2 for side in textsize)
@@ -138,7 +140,6 @@ def decruft_url(url):
 
 def parse_feed(outlet, url):
     # Take the URL of an RSS feed and return a list of Article objects
-
     feed = feedparser.parse(url)
 
     articles = []

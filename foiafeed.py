@@ -76,9 +76,9 @@ class Article:
                 self.matching_grafs.append(graf)
 
     def tweet(self):
-        width = 60 if len(self.matching_grafs) == 1 else 35
+        square = False if len(self.matching_grafs) == 1 else True
         for graf in self.matching_grafs[:4]:
-            self.imgs.append(render_img(graf, width))
+            self.imgs.append(render_img(graf, square=square))
 
         twitter = get_twitter_instance()
 
@@ -108,22 +108,32 @@ def get_twitter_instance():
 
     return Twython(app_key, app_secret, oauth_token, oauth_token_secret)
 
-def render_img(graf, width=60):
-    # Take a paragraph of text and return an Image object that consists of that text rendered onto a plain background.
+def get_textsize(graf, width, fnt, spacing):
+    wrapped_graf = textwrap.wrap(graf, width)
 
-    wrapped_list = textwrap.wrap(graf, width)
-    wrapped = '\n'.join(wrapped_list)
+    line_spacing = fnt.getsize('A')[1] + spacing
+    text_width = max(fnt.getsize(line)[0] for line in wrapped_graf)
+
+    textsize = text_width, line_spacing * len(wrapped_graf)
+
+    return textsize
+
+def render_img(graf, width=60, square=False):
+    # Take a paragraph of text and return an Image object that consists of that text rendered onto a plain background.
 
     font_name = 'LiberationSerif-Regular.ttf'
     fnt = ImageFont.truetype(font_name, size=36)
     spacing = 12 # Just a nice spacing number, visually
 
-    line_spacing = fnt.getsize('A')[1] + spacing
-    text_width = max(fnt.getsize(line)[0] for line in wrapped_list)
+    if square == True:
+        ts = {w: get_textsize(graf, w, fnt, spacing) \
+                for w in range(20, width)}
+        width = min(ts, key=lambda w: abs(ts.get(w)[1]-ts.get(w)[0]))
 
-    textsize = text_width, line_spacing * len(wrapped_list)
+    textsize = get_textsize(graf, width, fnt, spacing)
+    wrapped = '\n'.join(textwrap.wrap(graf, width))
 
-    border = 60 
+    border = 60
 
     size = tuple(side + border * 2 for side in textsize)
     xy = (border, border)
@@ -158,8 +168,6 @@ def main():
     db = os.path.join(fullpath, CONFIG['db'])
     conn = sqlite3.connect(db)
 
-    twitter = get_twitter_instance()
-    
     with open(RSSFEEDFILE, 'r') as f:
         rss_feeds = json.load(f)
 
@@ -176,7 +184,8 @@ def main():
         
         for counter, article in enumerate(articles, 1):
 
-            print("Checking {} article {}/{}".format(article.outlet, counter, len(articles)))
+            print('Checking {} article {}/{}'.format(
+                article.outlet, counter, len(articles)))
             
             article.check_for_matches()
 

@@ -58,5 +58,9 @@
     {
         "url": "http://feeds.reuters.com/Reuters/PoliticsNews",
         "outlet": "Reuters"
+    },
+    {
+        "url": "https://gizmodo.com/rss",
+        "outlet": "Gizmodo"
     }
 ]

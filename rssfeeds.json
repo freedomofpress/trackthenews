@@ -70,5 +70,9 @@
     {
         "url": "http://www.chicagotribune.com/rss2.0.xml",
         "outlet": "Chicago Tribune"
+    },
+    {
+        "url": "http://rss.cnn.com/rss/cnn_allpolitics.rss",
+        "outlet": "CNN"
     }
 ]

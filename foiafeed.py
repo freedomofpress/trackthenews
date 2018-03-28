@@ -49,7 +49,7 @@ class Article:
         self.tweeted = False
 
     def canonicalize_url(self):
-        if self.outlet in ['ProPublica', 'Reuters']:
+        if self.outlet in ['ProPublica', 'Reuters', 'CNN']:
             res = requests.head(self.url, allow_redirects=True)
             self.url = res.headers['location'] if 'location' in res.headers \
                 else res.url

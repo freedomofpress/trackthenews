@@ -4,6 +4,10 @@
         "outlet": "Buzzfeed"
     },
     {
+        "url": "https://www.buzzfeed.com/jasonleopold.xml",
+        "outlet": "Buzzfeed"
+    },
+    {
         "url": "http://feeds.washingtonpost.com/rss/national",
         "outlet": "Washington Post" 
     },

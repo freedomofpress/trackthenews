@@ -62,5 +62,9 @@
     {
         "url": "https://gizmodo.com/rss",
         "outlet": "Gizmodo"
+    },
+    {
+        "url": "http://www.miamiherald.com/?widgetName=rssfeed&widgetContentId=712015&getXmlFeed=true",
+        "outlet": "Miami Herald"
     }
 ]

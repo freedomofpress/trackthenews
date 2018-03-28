@@ -66,5 +66,9 @@
     {
         "url": "http://www.miamiherald.com/?widgetName=rssfeed&widgetContentId=712015&getXmlFeed=true",
         "outlet": "Miami Herald"
+    },
+    {
+        "url": "http://www.chicagotribune.com/rss2.0.xml",
+        "outlet": "Chicago Tribune"
     }
 ]

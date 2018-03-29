@@ -78,5 +78,9 @@
     {
         "url": "http://rss.cnn.com/rss/cnn_allpolitics.rss",
         "outlet": "CNN"
+    },
+    {
+        "url": "https://feeds.thedailybeast.com/rss/articles",
+        "outlet": "The Daily Beast"
     }
 ]

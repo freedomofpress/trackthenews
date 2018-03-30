@@ -12,6 +12,7 @@ import sqlite3
 import textwrap
 import time
 import yaml
+from bs4 import BeautifulSoup
 from datetime import datetime
 from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont
@@ -60,8 +61,8 @@ class Article:
             self.url = decruft_url(self.url)
 
     def clean(self):
-        res = requests.get(self.url)
-        doc = Document(res.text)
+        self.res = requests.get(self.url)
+        doc = Document(self.res.text)
 
         h = html2text.HTML2Text()
         h.ignore_links = True
@@ -70,13 +71,38 @@ class Article:
 
         self.plaintext = h.handle(doc.summary())
 
+    def check_blocklist(self):
+        """
+        This is likely to be a long set of rules for articles not to tweet.
+        """
+        blocked = False
+
+        # Rules that require a BeautifulSoup parse:
+        if self.outlet in ['Miami Herald']:
+            soup = BeautifulSoup(self.res.text, 'lxml')
+            # Attempt to exclude AP articles from non-AP feeds
+            if ('associated press' in 
+                    soup.find(attrs = {'class':'byline'}).get_text().lower()):
+                 blocked = True
+
+        # Rules that do not require a BeautifulSoup parse:
+        # Exclude articles in LAT "Essential Politics" feed
+        # (which shows multiple articles on a single page)
+        if self.outlet == 'LA Times' and '/politics/essential/' in self.url:
+            blocked = True
+
+        return blocked
+
     def check_for_matches(self):
         self.clean()
         plaintext_grafs = self.plaintext.split('\n')
 
-        for graf in plaintext_grafs:
-            if any(phrase.lower() in graf.lower() for phrase in FOIA_PHRASES):
-                self.matching_grafs.append(graf)
+        if self.check_blocklist():
+            pass
+        else:
+            for graf in plaintext_grafs:
+                if any(phrase.lower() in graf.lower() for phrase in FOIA_PHRASES):
+                    self.matching_grafs.append(graf)
 
     def tweet(self):
         square = False if len(self.matching_grafs) == 1 else True

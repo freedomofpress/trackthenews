@@ -52,6 +52,7 @@ class Article:
         self.tweeted = False
 
     def canonicalize_url(self):
+        """Process article URL to produce something roughly canonical."""
         if self.outlet in ['ProPublica', 'Reuters', 'CNN']:
             res = requests.head(self.url, allow_redirects=True)
             self.url = res.headers['location'] if 'location' in res.headers \
@@ -61,6 +62,7 @@ class Article:
             self.url = decruft_url(self.url)
 
     def clean(self):
+        """Download the article and strip it of HTML formatting."""
         self.res = requests.get(self.url)
         doc = Document(self.res.text)
 
@@ -94,6 +96,9 @@ class Article:
         return blocked
 
     def check_for_matches(self):
+        """
+        Clean up an article, check it against a block list, then for matches.
+        """
         self.clean()
         plaintext_grafs = self.plaintext.split('\n')
 
@@ -105,6 +110,7 @@ class Article:
                     self.matching_grafs.append(graf)
 
     def tweet(self):
+        """Send images to be rendered and tweet them with a text status."""
         square = False if len(self.matching_grafs) == 1 else True
         for graf in self.matching_grafs[:4]:
             self.imgs.append(render_img(graf, square=square))
@@ -124,12 +130,13 @@ class Article:
             except:
                 pass
 
-        status = self.outlet + ": " + self.title + " " + self.url
+        status = "{}: {} {}".format(self.outlet, self.title, self.url)
         twitter.update_status(status=status, media_ids=media_ids)
 
         self.tweeted = True
 
 def get_twitter_instance():
+    """Return an authenticated twitter instance."""
     app_key = CONFIG['twitter_app_key']
     app_secret = CONFIG['twitter_app_secret']
     oauth_token = CONFIG['twitter_oauth_token']
@@ -138,6 +145,7 @@ def get_twitter_instance():
     return Twython(app_key, app_secret, oauth_token, oauth_token_secret)
 
 def get_textsize(graf, width, fnt, spacing):
+    """Take text and additional parameters and return the rendered size."""
     wrapped_graf = textwrap.wrap(graf, width)
 
     line_spacing = fnt.getsize('A')[1] + spacing
@@ -148,8 +156,7 @@ def get_textsize(graf, width, fnt, spacing):
     return textsize
 
 def render_img(graf, width=60, square=False):
-    # Take a paragraph of text and return an Image object that consists of that text rendered onto a plain background.
-
+    """Take a paragraph and render an Image of it on a plain background."""
     font_name = 'LiberationSerif-Regular.ttf'
     fnt = ImageFont.truetype(font_name, size=36)
     spacing = 12 # Just a nice spacing number, visually
@@ -174,11 +181,12 @@ def render_img(graf, width=60, square=False):
     return im
 
 def decruft_url(url):
+    """Attempt to remove extraneous characters from a given URL and return it."""
     url = url.split('?')[0].split('#')[0]
     return url
 
 def parse_feed(outlet, url):
-    # Take the URL of an RSS feed and return a list of Article objects
+    """Take the URL of an RSS feed and return a list of Article objects."""
     feed = feedparser.parse(url)
 
     articles = []

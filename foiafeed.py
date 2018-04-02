@@ -63,12 +63,14 @@ class Article:
 
     def clean(self):
         """Download the article and strip it of HTML formatting."""
-        self.res = requests.get(self.url)
+        useragent = "@foiafeed (a project of freedom.press)"
+        self.res = requests.get(self.url, headers={'User-Agent':useragent})
         doc = Document(self.res.text)
 
         h = html2text.HTML2Text()
         h.ignore_links = True
         h.ignore_emphasis = True
+        h.ignore_images = True
         h.body_width = 0
 
         self.plaintext = h.handle(doc.summary())

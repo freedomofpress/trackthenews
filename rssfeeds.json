@@ -82,5 +82,13 @@
     {
         "url": "https://feeds.thedailybeast.com/rss/articles",
         "outlet": "The Daily Beast"
+    },
+    {
+        "url": "https://www.huffingtonpost.com/section/politics/feed",
+        "outlet": "HuffPost"
+    },
+    {
+        "url": "https://www.huffingtonpost.com/section/us-news/feed",
+        "outlet": "HuffPost"
     }
 ]

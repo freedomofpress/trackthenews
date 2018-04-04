@@ -90,5 +90,9 @@
     {
         "url": "https://www.huffingtonpost.com/section/us-news/feed",
         "outlet": "HuffPost"
+    },
+    {
+        "url": "http://www.mcclatchydc.com/news/?widgetName=rssfeed&widgetContentId=712015&getXmlFeed=true",
+        "outlet": "McClatchyDC"
     }
 ]

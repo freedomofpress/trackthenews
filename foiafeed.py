@@ -84,8 +84,9 @@ class Article:
         # Rules that require a BeautifulSoup parse:
         if self.outlet in ['Miami Herald']:
             soup = BeautifulSoup(self.res.text, 'lxml')
-            # Attempt to exclude AP articles from non-AP feeds
-            if (soup.find(attrs = {'class': 'byline'}) and 'associated press' in 
+            # Attempt to exclude AP and McClatchy articles from other feeds
+            if (soup.find(attrs = {'class': 'byline'}) and
+                    any(['associated press', 'mcclatchydc']) in
                     soup.find(attrs = {'class':'byline'}).get_text().lower()):
                  blocked = True
 

@@ -89,8 +89,8 @@ class Article:
             soup = BeautifulSoup(self.res.text, 'lxml')
             # Attempt to exclude AP and McClatchy articles from other feeds
             if (soup.find(attrs={'class': 'byline'}) and
-                    any(['associated press', 'mcclatchydc']) in
-                    soup.find(attrs={'class':'byline'}).get_text().lower()):
+                    any(['associated press', 'mcclatchydc'] in
+                    soup.find(attrs={'class':'byline'}).get_text().lower())):
                 blocked = True
 
         # Rules that do not require a BeautifulSoup parse:

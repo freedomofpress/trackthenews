@@ -3,39 +3,42 @@
 # then converts those articles to plaintext and searches them for mentions of
 # FOIA or other public records law, then tweets matching excerpts.
 
-import feedparser
-import html2text
 import json
 import os
-import requests
 import sqlite3
-import textwrap
 import time
-import yaml
-from bs4 import BeautifulSoup
+import textwrap
+
 from datetime import datetime
 from io import BytesIO
+
+import feedparser
+import html2text
+import requests
+import yaml
+
+from bs4 import BeautifulSoup
 from PIL import Image, ImageDraw, ImageFont
 from readability import Document
-from twython import Twython
+from twython import Twython, TwythonError
 
 # Comparison happens in lowercase, so no uppercase letters here!
 FOIA_PHRASES = [
-'f.o.i.a.',
-'foia',
-'freedom of information act',
-'freedom of information law',
-'records request',
-'open records',
-'public records act',
-'public records law',
-'public records obtained',
-'sunshine law',
-'sunshine act']
+    'f.o.i.a.',
+    'foia',
+    'freedom of information act',
+    'freedom of information law',
+    'records request',
+    'open records',
+    'public records act',
+    'public records law',
+    'public records obtained',
+    'sunshine law',
+    'sunshine act']
 
-fullpath = os.path.dirname(os.path.realpath(__file__))
-CONFIGFILE = os.path.join(fullpath, 'config.yaml')
-RSSFEEDFILE = os.path.join(fullpath, 'rssfeeds.json')
+FULLPATH = os.path.dirname(os.path.realpath(__file__))
+CONFIGFILE = os.path.join(FULLPATH, 'config.yaml')
+RSSFEEDFILE = os.path.join(FULLPATH, 'rssfeeds.json')
 
 with open(CONFIGFILE, 'r') as c:
     CONFIG = yaml.load(c)
@@ -85,10 +88,10 @@ class Article:
         if self.outlet in ['Miami Herald']:
             soup = BeautifulSoup(self.res.text, 'lxml')
             # Attempt to exclude AP and McClatchy articles from other feeds
-            if (soup.find(attrs = {'class': 'byline'}) and
+            if (soup.find(attrs={'class': 'byline'}) and
                     any(['associated press', 'mcclatchydc']) in
-                    soup.find(attrs = {'class':'byline'}).get_text().lower()):
-                 blocked = True
+                    soup.find(attrs={'class':'byline'}).get_text().lower()):
+                blocked = True
 
         # Rules that do not require a BeautifulSoup parse:
         # Exclude articles in LAT "Essential Politics" feed
@@ -130,7 +133,7 @@ class Article:
                 res = twitter.upload_media(media=img_io)
 
                 media_ids.append(res['media_id'])
-            except:
+            except TwythonError:
                 pass
 
         status = "{}: {} {}".format(self.outlet, self.title, self.url)
@@ -164,7 +167,7 @@ def render_img(graf, width=60, square=False):
     fnt = ImageFont.truetype(font_name, size=36)
     spacing = 12 # Just a nice spacing number, visually
 
-    if square == True:
+    if square is True:
         ts = {w: get_textsize(graf, w, fnt, spacing) \
                 for w in range(20, width)}
         width = min(ts, key=lambda w: abs(ts.get(w)[1]-ts.get(w)[0]))
@@ -178,8 +181,8 @@ def render_img(graf, width=60, square=False):
     xy = (border, border)
 
     im = Image.new('RGB', size, color='#F5F5F5')
-    d = ImageDraw.Draw(im)
-    d.multiline_text(xy, wrapped, fill='#000000', font=fnt, spacing=12)
+    draw_obj = ImageDraw.Draw(im)
+    draw_obj.multiline_text(xy, wrapped, fill='#000000', font=fnt, spacing=12)
 
     return im
 
@@ -205,8 +208,8 @@ def parse_feed(outlet, url):
     return articles
 
 def main():
-    db = os.path.join(fullpath, CONFIG['db'])
-    conn = sqlite3.connect(db)
+    database = os.path.join(FULLPATH, CONFIG['db'])
+    conn = sqlite3.connect(database)
 
     with open(RSSFEEDFILE, 'r') as f:
         rss_feeds = json.load(f)
@@ -221,23 +224,23 @@ def main():
              order by id desc limit 1000', (outlet,)))]
 
         articles = [a for a in articles if a.url and a.url not in recent_urls]
-        
+
         for counter, article in enumerate(articles, 1):
 
             print('Checking {} article {}/{}'.format(
                 article.outlet, counter, len(articles)))
-            
+
             article.check_for_matches()
 
             if article.matching_grafs:
                 print("Got one!")
                 article.tweet()
 
-            conn.execute("""
-                insert into articles(title, outlet, url, tweeted, recorded_at)
-                values (?, ?, ?, ?, ?)""",
-                (article.title, article.outlet, article.url, article.tweeted, 
-                datetime.utcnow()))
+            conn.execute("""insert into articles(
+                         title, outlet, url, tweeted,recorded_at)
+                         values (?, ?, ?, ?, ?)""",
+                         (article.title, article.outlet, article.url,
+                          article.tweeted, datetime.utcnow()))
 
             conn.commit()
 

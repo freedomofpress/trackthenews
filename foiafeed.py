@@ -36,12 +36,21 @@ FOIA_PHRASES = [
     'sunshine law',
     'sunshine act']
 
+# These are outlets that syndicate redirect links in their RSS feeds. Boo!
+RSS_REDIRECT_OUTLETS = ['ProPublica', 'Reuters', 'CNN']
+
+# These are outlets that are sensitive to URL queries and fragments.
+DELICATE_URL_OUTLETS = ['AP']
+
 FULLPATH = os.path.dirname(os.path.realpath(__file__))
 CONFIGFILE = os.path.join(FULLPATH, 'config.yaml')
 RSSFEEDFILE = os.path.join(FULLPATH, 'rssfeeds.json')
 
 with open(CONFIGFILE, 'r') as c:
     CONFIG = yaml.load(c)
+
+# User-Agent for requests to pages. For forks, please fill this in!
+USERAGENT = CONFIG['user-agent']
 
 class Article:
     def __init__(self, outlet, title, url):
@@ -56,18 +65,21 @@ class Article:
 
     def canonicalize_url(self):
         """Process article URL to produce something roughly canonical."""
-        if self.outlet in ['ProPublica', 'Reuters', 'CNN']:
+        # These outlets use redirect links in their RSS feeds.
+        # Follow those links, then store only the final destination.
+        if self.outlet in RSS_REDIRECT_OUTLETS:
             res = requests.head(self.url, allow_redirects=True)
             self.url = res.headers['location'] if 'location' in res.headers \
                 else res.url
 
-        if self.outlet not in ['AP']:
+        # Some outlets' URLs don't play well with modifications, so those we 
+        # store crufty. Otherwise, decruft with extreme prejudice.
+        if self.outlet not in DELICATE_URL_OUTLETS:
             self.url = decruft_url(self.url)
 
     def clean(self):
         """Download the article and strip it of HTML formatting."""
-        useragent = "@foiafeed (a project of freedom.press)"
-        self.res = requests.get(self.url, headers={'User-Agent':useragent})
+        self.res = requests.get(self.url, headers={'User-Agent':USERAGENT})
         doc = Document(self.res.text)
 
         h = html2text.HTML2Text()
@@ -181,6 +193,8 @@ def render_img(graf, width=60, square=False):
     size = tuple(side + border * 2 for side in textsize)
     xy = (border, border)
 
+    # The following color is a nice light gray. Maybe if you're forking this,
+    # pick a different one for a distinct visual identity!
     im = Image.new('RGB', size, color='#F5F5F5')
     draw_obj = ImageDraw.Draw(im)
     draw_obj.multiline_text(xy, wrapped, fill='#000000', font=fnt, spacing=12)

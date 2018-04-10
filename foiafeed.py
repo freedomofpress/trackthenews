@@ -244,7 +244,7 @@ def main():
 
         recent_urls = [entry[0] for entry in list(conn.execute(
             'select url from articles where outlet=? \
-             order by id desc limit 1000', (outlet,)))]
+             order by id desc limit 2000', (outlet,)))]
 
         articles = [a for a in articles if a.url and a.url not in recent_urls]
 

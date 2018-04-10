@@ -224,6 +224,14 @@ def parse_feed(outlet, url):
 
 def main():
     database = os.path.join(FULLPATH, CONFIG['db'])
+    if not os.path.exists(database):
+        conn = sqlite3.connect(database)
+        with open('schema.sql') as f:
+            schema_script = f.read()
+        conn.executescript(schema_script)
+        conn.commit()
+        conn.close()
+
     conn = sqlite3.connect(database)
 
     with open(RSSFEEDFILE, 'r') as f:

@@ -94,5 +94,9 @@
     {
         "url": "http://www.mcclatchydc.com/news/?widgetName=rssfeed&widgetContentId=712015&getXmlFeed=true",
         "outlet": "McClatchyDC"
+    },
+    {
+        "url": "https://motherboard.vice.com/en_us/rss",
+        "outlet": "Motherboard"
     }
 ]

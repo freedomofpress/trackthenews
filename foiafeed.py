@@ -186,6 +186,8 @@ def render_img(graf, width=60, square=False):
     fnt = ImageFont.truetype(font_name, size=36)
     spacing = 12 # Just a nice spacing number, visually
 
+    graf = graf.lstrip('#>—-• ')
+
     if square is True:
         ts = {w: get_textsize(graf, w, fnt, spacing) \
                 for w in range(20, width)}

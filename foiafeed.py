@@ -103,13 +103,19 @@ class Article:
             if (soup.find(attrs={'class': 'byline'}) and
                     any(syndication in
                     soup.find(attrs={'class':'byline'}).get_text().lower()
-                    for syndication in ['associated press', 'mcclatchydc'])):
+                    for syndication in
+                    ['ap ', 'associated press', 'mcclatchydc'])):
                 blocked = True
 
         # Rules that do not require a BeautifulSoup parse:
         # Exclude articles in LAT "Essential Politics" feed
         # (which shows multiple articles on a single page)
         if self.outlet == 'LA Times' and '/politics/essential/' in self.url:
+            blocked = True
+
+        # Exclude articles from WaPo's "202" newsletter series.
+        # Headline and content don't match well
+        if self.outlet == 'Washington Post' and '202' in self.title:
             blocked = True
 
         return blocked

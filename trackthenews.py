@@ -22,12 +22,6 @@ from PIL import Image, ImageDraw, ImageFont
 from readability import Document
 from twython import Twython, TwythonError
 
-# These are outlets that syndicate redirect links in their RSS feeds. Boo!
-RSS_REDIRECT_OUTLETS = ['ProPublica', 'Reuters', 'CNN']
-
-# These are outlets that are sensitive to URL queries and fragments.
-DELICATE_URL_OUTLETS = ['AP']
-
 FULLPATH = os.path.dirname(os.path.realpath(__file__))
 CONFIGFILE = os.path.join(FULLPATH, 'config.yaml')
 RSSFEEDFILE = os.path.join(FULLPATH, 'rssfeeds.json')
@@ -43,10 +37,12 @@ with open(CONFIGFILE, 'r') as c:
 USERAGENT = CONFIG['user-agent']
 
 class Article:
-    def __init__(self, outlet, title, url):
+    def __init__(self, outlet, title, url, delicate=False, redirects=False):
         self.outlet = outlet
         self.title = title
         self.url = url
+        self.delicate = delicate
+        self.redirects = redirects
         self.canonicalize_url()
 
         self.matching_grafs = []
@@ -57,14 +53,14 @@ class Article:
         """Process article URL to produce something roughly canonical."""
         # These outlets use redirect links in their RSS feeds.
         # Follow those links, then store only the final destination.
-        if self.outlet in RSS_REDIRECT_OUTLETS:
+        if self.redirects:
             res = requests.head(self.url, allow_redirects=True)
             self.url = res.headers['location'] if 'location' in res.headers \
                 else res.url
 
         # Some outlets' URLs don't play well with modifications, so those we 
         # store crufty. Otherwise, decruft with extreme prejudice.
-        if self.outlet not in DELICATE_URL_OUTLETS:
+        if not self.delicate:
             self.url = decruft_url(self.url)
 
     def clean(self):
@@ -205,7 +201,7 @@ def decruft_url(url):
     url = url.split('?')[0].split('#')[0]
     return url
 
-def parse_feed(outlet, url):
+def parse_feed(outlet, url, delicate, redirects):
     """Take the URL of an RSS feed and return a list of Article objects."""
     feed = feedparser.parse(url)
 
@@ -214,8 +210,8 @@ def parse_feed(outlet, url):
     for entry in feed['entries']:
         title = entry['title']
         url = entry['link']
-
-        article = Article(outlet, title, url)
+        
+        article = Article(outlet, title, url, delicate, redirects)
 
         articles.append(article)
 
@@ -239,7 +235,12 @@ def main():
     for feed in rss_feeds:
         outlet = feed['outlet']
         url = feed['url']
-        articles = parse_feed(outlet, url)
+        delicate = True if 'delicateURLs' in feed and feed['delicateURLs'] \
+                else False
+        redirects = True if 'redirectLinks' in feed and feed['redirectLinks'] \
+                else False
+
+        articles = parse_feed(outlet, url, delicate, redirects)
 
         recent_urls = [entry[0] for entry in list(conn.execute(
             'select url from articles where outlet=? \

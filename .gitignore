@@ -1,3 +1,5 @@
 config.yaml
+rssfeeds.json
+matchwords.txt
 __pycache__/*
 *.db

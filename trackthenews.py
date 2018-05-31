@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Parses a collection of news outlet RSS feeds for recently published articles,
 # then converts those articles to plaintext and searches them for mentions of
-# FOIA or other public records law, then tweets matching excerpts.
+# given words or phrases, and posts the results to Twitter.
 
 import json
 import os
@@ -22,20 +22,6 @@ from PIL import Image, ImageDraw, ImageFont
 from readability import Document
 from twython import Twython, TwythonError
 
-# Comparison happens in lowercase, so no uppercase letters here!
-FOIA_PHRASES = [
-    'f.o.i.a.',
-    'foia',
-    'freedom of information act',
-    'freedom of information law',
-    'records request',
-    'open records',
-    'public records act',
-    'public records law',
-    'public records obtained',
-    'sunshine law',
-    'sunshine act']
-
 # These are outlets that syndicate redirect links in their RSS feeds. Boo!
 RSS_REDIRECT_OUTLETS = ['ProPublica', 'Reuters', 'CNN']
 
@@ -45,6 +31,10 @@ DELICATE_URL_OUTLETS = ['AP']
 FULLPATH = os.path.dirname(os.path.realpath(__file__))
 CONFIGFILE = os.path.join(FULLPATH, 'config.yaml')
 RSSFEEDFILE = os.path.join(FULLPATH, 'rssfeeds.json')
+MATCHWORDSFILE = os.path.join(FULLPATH, 'matchwords.txt')
+
+with open(MATCHWORDSFILE) as f:
+    MATCHWORDS = f.read().split('\n')[:-1]
 
 with open(CONFIGFILE, 'r') as c:
     CONFIG = yaml.load(c)
@@ -131,7 +121,7 @@ class Article:
             pass
         else:
             for graf in plaintext_grafs:
-                if any(phrase.lower() in graf.lower() for phrase in FOIA_PHRASES):
+                if any(word.lower() in graf.lower() for word in MATCHWORDS):
                     self.matching_grafs.append(graf)
 
     def tweet(self):
@@ -156,7 +146,8 @@ class Article:
                 pass
 
         status = "{}: {} {}".format(self.outlet, self.title, self.url)
-        twitter.update_status(status=status, media_ids=media_ids)
+#        twitter.update_status(status=status, media_ids=media_ids)
+        print(status)
 
         self.tweeted = True
 

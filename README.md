@@ -1,10 +1,28 @@
 # Track The News
 
-`trackthenews` is the script that powers [@FOIAfeed](https://twitter.com/foiafeed), a Twitter bot that monitors news outlets for reporting that incorporates public records laws like the Freedom of Information Act (FOIA), and tweets links to and excerpts from matching articles. It is being rewritten and generalized to be useful for other operators in other contexts.
+`trackthenews` is the script that powers [@FOIAfeed](https://twitter.com/foiafeed), a Twitter bot that monitors news outlets for reporting that incorporates public records laws like the Freedom of Information Act (FOIA), and tweets links to and excerpts from matching articles.
+
+If you want to run your own instance of `trackthenews`, you can download and install the package, and run its built-in configuration process:
+
+```bash
+python3 trackthenews --config
+```
+
+By default, the script will place all configuration files in a new `trackthenews` folder in your current working directory, but you can also designate a directory for it to use.
+
+```bash
+python3 trackthenews --config ~/foo/bar/path
+```
+
+That configuration process will create the necessary files and walk you through setting up a Twitter bot for matching stories. After it is configured, you'll need to use a text editor to add the `matchwords` and RSS feeds to their respective files.
+
+Once you've got everything set up, you can run the program without the `--config` flag to check for matching articles. If you designated a custom installation directory, or if you're running it from another directory (or a `cron` job, for example) you will need to designate the directory in which the configuration files are installed.
+
+## How it works
 
 Most of the script is dedicated to the `Article` class.
 * `Article`s are created based on inputs. Currently those inputs are RSS feeds, which are stored in `rssfeeds.json`, but in future versions other inputs will include direct URLs, news APIs, Twitter feeds, or scraped pages.
 * A series of `Article` methods then scrape and isolate the contents of each article (currently that cleanup is done with a [Python port of Readability](https://github.com/buriy/python-readability), but future versions may incorporate some per-site parsing), check whether it's suitable for posting, and then prepare images for tweeting.
 * Finally, the `Article` tweets itself.
 
-All articles are recorded in a sqlite database defined by the `schema.sql` file.
+All articles are recorded in a sqlite database.

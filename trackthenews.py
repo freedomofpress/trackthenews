@@ -3,11 +3,14 @@
 # then converts those articles to plaintext and searches them for mentions of
 # given words or phrases, and posts the results to Twitter.
 
+import argparse
+import importlib
 import json
 import os
 import sqlite3
 import time
 import textwrap
+import sys
 
 from datetime import datetime
 from io import BytesIO
@@ -22,19 +25,8 @@ from PIL import Image, ImageDraw, ImageFont
 from readability import Document
 from twython import Twython, TwythonError
 
-FULLPATH = os.path.dirname(os.path.realpath(__file__))
-CONFIGFILE = os.path.join(FULLPATH, 'config.yaml')
-RSSFEEDFILE = os.path.join(FULLPATH, 'rssfeeds.json')
-MATCHWORDSFILE = os.path.join(FULLPATH, 'matchwords.txt')
-
-with open(MATCHWORDSFILE) as f:
-    MATCHWORDS = f.read().split('\n')[:-1]
-
-with open(CONFIGFILE, 'r') as c:
-    CONFIG = yaml.load(c)
-
-# User-Agent for requests to pages. For forks, please fill this in!
-USERAGENT = CONFIG['user-agent']
+# TODO: add/remove RSS feeds from within the script.
+# Currently the matchwords list and RSS feeds list must be edited separately.
 
 class Article:
     def __init__(self, outlet, title, url, delicate=False, redirects=False):
@@ -65,7 +57,7 @@ class Article:
 
     def clean(self):
         """Download the article and strip it of HTML formatting."""
-        self.res = requests.get(self.url, headers={'User-Agent':USERAGENT})
+        self.res = requests.get(self.url, headers={'User-Agent':ua})
         doc = Document(self.res.text)
 
         h = html2text.HTML2Text()
@@ -76,36 +68,6 @@ class Article:
 
         self.plaintext = h.handle(doc.summary())
 
-    def check_blocklist(self):
-        """
-        This is likely to be a long set of rules for articles not to tweet.
-        """
-        blocked = False
-
-        # Rules that require a BeautifulSoup parse:
-        if self.outlet in ['Miami Herald']:
-            soup = BeautifulSoup(self.res.text, 'lxml')
-            # Attempt to exclude AP and McClatchy articles from other feeds
-            if (soup.find(attrs={'class': 'byline'}) and
-                    any(syndication in
-                    soup.find(attrs={'class':'byline'}).get_text().lower()
-                    for syndication in
-                    ['ap ', 'associated press', 'mcclatchydc'])):
-                blocked = True
-
-        # Rules that do not require a BeautifulSoup parse:
-        # Exclude articles in LAT "Essential Politics" feed
-        # (which shows multiple articles on a single page)
-        if self.outlet == 'LA Times' and '/politics/essential/' in self.url:
-            blocked = True
-
-        # Exclude articles from WaPo's "202" newsletter series.
-        # Headline and content don't match well
-        if self.outlet == 'Washington Post' and '202' in self.title:
-            blocked = True
-
-        return blocked
-
     def check_for_matches(self):
         """
         Clean up an article, check it against a block list, then for matches.
@@ -113,11 +75,11 @@ class Article:
         self.clean()
         plaintext_grafs = self.plaintext.split('\n')
 
-        if self.check_blocklist():
+        if blocklist_loaded and blocklist.check(self):
             pass
         else:
             for graf in plaintext_grafs:
-                if any(word.lower() in graf.lower() for word in MATCHWORDS):
+                if any(word.lower() in graf.lower() for word in matchwords):
                     self.matching_grafs.append(graf)
 
     def tweet(self):
@@ -142,17 +104,17 @@ class Article:
                 pass
 
         status = "{}: {} {}".format(self.outlet, self.title, self.url)
-#        twitter.update_status(status=status, media_ids=media_ids)
+        twitter.update_status(status=status, media_ids=media_ids)
         print(status)
 
         self.tweeted = True
 
 def get_twitter_instance():
     """Return an authenticated twitter instance."""
-    app_key = CONFIG['twitter_app_key']
-    app_secret = CONFIG['twitter_app_secret']
-    oauth_token = CONFIG['twitter_oauth_token']
-    oauth_token_secret = CONFIG['twitter_oauth_token_secret']
+    app_key = config['twitter']['api_key']
+    app_secret = config['twitter']['api_secret']
+    oauth_token = config['twitter']['oauth_token']
+    oauth_token_secret = config['twitter']['oauth_secret']
 
     return Twython(app_key, app_secret, oauth_token, oauth_token_secret)
 
@@ -188,9 +150,7 @@ def render_img(graf, width=60, square=False):
     size = tuple(side + border * 2 for side in textsize)
     xy = (border, border)
 
-    # The following color is a nice light gray. Maybe if you're forking this,
-    # pick a different one for a distinct visual identity!
-    im = Image.new('RGB', size, color='#F5F5F5')
+    im = Image.new('RGB', size, color=config['color'])
     draw_obj = ImageDraw.Draw(im)
     draw_obj.multiline_text(xy, wrapped, fill='#000000', font=fnt, spacing=12)
 
@@ -217,9 +177,44 @@ def parse_feed(outlet, url, delicate, redirects):
 
     return articles
 
-def main():
-    database = os.path.join(FULLPATH, CONFIG['db'])
-    if not os.path.exists(database):
+def config_twitter(config):
+    if 'twitter' in config.keys():
+        replace = input("Twitter configuration already exists. Replace? (Y/n) ")
+        if replace.lower() in ['n','no']:
+            return config
+
+    input("Create a new Twitter app at https://apps.twitter.com/app/new to post matching stories. For this step, you can be logged in as yourself or with the posting account, if they're different. Fill out Name, Description, and Website with values meaningful to you. These are not used in trackthenews config but may be publicly visible. Then click the \"Keys and Access Tokens\" tab. ")
+
+    api_key = input("Enter the provided API key: ")
+    api_secret = input("Enter the provided API secret: ")
+
+    input("Now ensure you are logged in with the account that will do the posting. ")
+
+    tw = Twython(api_key, api_secret)
+    auth = tw.get_authentication_tokens()
+
+    oauth_token = auth['oauth_token']
+    oauth_secret = auth['oauth_token_secret']
+
+    tw = Twython(api_key, api_secret, oauth_token, oauth_secret)
+
+    pin = input("Enter the pin found at {} ".format(auth['auth_url']))
+
+    final_step = tw.get_authorized_tokens(pin)
+
+    oauth_token = final_step['oauth_token']
+    oauth_secret = final_step['oauth_token_secret']
+
+    twitter = {'api_key': api_key, 'api_secret': api_secret,
+            'oauth_token': oauth_token, 'oauth_secret': oauth_secret}
+
+    config['twitter'] = twitter 
+
+    return config
+
+def setup_db(config):
+    database = os.path.join(home, config['db'])
+    if not os.path.isfile(database):
         conn = sqlite3.connect(database)
         with open('schema.sql') as f:
             schema_script = f.read()
@@ -227,10 +222,141 @@ def main():
         conn.commit()
         conn.close()
 
+def setup_matchlist():
+    path = os.path.join(home, 'matchlist.txt')
+    
+    if os.path.isfile(path):
+        print("A matchlist already exists at {path}.".format(**locals()))
+        return
+    
+    with open(path, 'w') as f:
+        f.write('')
+        print("A new matchlist has been generated at {path}. You can add case insensitive entries to match, one per line.".format(**locals()))
+    
+    return
+
+def setup_rssfeedsfile():
+    path = os.path.join(home, 'rssfeeds.json')
+
+    if os.path.isfile(path):
+        print("An RSS feeds file already exists at {path}.".format(**locals()))
+        return
+    else:
+        with open(path, 'w') as f:
+            f.write('')
+            print("A new RSS feeds file has been generated at {path}.".format(**locals()))
+
+    return
+
+def initial_setup():
+    configfile = os.path.join(home, 'config.yaml')
+
+    if os.path.isfile(configfile):
+        with open(configfile, 'r') as f:
+            config = yaml.load(f)
+    else:
+        to_configure = input("It looks like this is the first time you've run trackthenews, or you've moved or deleted its configuration files.\nWould you like to create a new configuration in {}? (Y/n) ".format(home))
+
+        config = {}
+    
+        if to_configure.lower() in ['n','no','q','exit','quit']:
+            sys.exit("Ok, quitting the program without configuring.")
+
+    os.makedirs(home, exist_ok=True)
+
+    if 'db' not in config:
+        config['db'] = 'trackthenews.db'
+
+    if 'user-agent' not in config:
+        ua = input("What would you like your script's user-agent to be? This should be something that is meaningful to you and may show up in the logs of the sites you are tracking. ")
+
+        ua = ua + " / trackthenews"
+
+        config['user-agent'] = ua
+
+    if 'color' not in config:
+        config['color'] = '#F5F5F5'
+
+    setup_matchlist()
+    setup_rssfeedsfile()
+    setup_db(config)
+    config = config_twitter(config)
+
+
+    with open(configfile, "w") as f:
+        yaml.dump(config, f, default_flow_style=False)
+
+    return config
+
+def main():
+    parser = argparse.ArgumentParser(description="Track articles from RSS feeds for a custom list of keywords and act on the matches.")
+
+    parser.add_argument('-c', '--config', help="Run configuration process",
+            action="store_true")
+    parser.add_argument('dir', nargs='?',
+            help="The directory to store or find the configuration files.",
+            default=os.path.join(os.getcwd(), 'trackthenews'))
+
+    args = parser.parse_args()
+    
+    global home
+    home = os.path.abspath(args.dir)
+
+    print("Running with configuration files in {}".format(home))
+
+    if args.config:
+        initial_setup()
+        sys.exit("Created new configuration files. Now go populate the RSS Feed file and the list of matchwords!")
+
+    configfile = os.path.join(home, 'config.yaml')
+    if not os.path.isfile(configfile):
+        initial_setup()
+
+    global config
+    with open(configfile) as f:
+        config = yaml.load(f)
+
+    global ua
+    ua = config['user-agent']
+
+    database = os.path.join(home, config['db'])
+    if not os.path.isfile(database):
+        setup_db(config)
+
     conn = sqlite3.connect(database)
 
-    with open(RSSFEEDFILE, 'r') as f:
-        rss_feeds = json.load(f)
+    matchlist = os.path.join(home, 'matchlist.txt')
+    if not os.path.isfile(matchlist):
+        setup_matchlist()
+
+    global matchwords
+    with open(matchlist, 'r') as f:
+        matchwords = f.read().split('\n')[:-1]
+        if not matchwords:
+            sys.exit("You must add words to the matchwords list, located at {}.".format(matchlist))
+
+    sys.path.append(home)
+    global blocklist_loaded
+    global blocklist
+    try:
+        import blocklist as blocklist
+        blocklist_loaded = True
+        print("Loaded blocklist.")
+    except ImportError:
+        blocklist_loaded = False
+        print("No blocklist to load.")
+
+    print("Matching against the following words: {}".format(matchwords))
+
+    rssfeedsfile = os.path.join(home, 'rssfeeds.json')
+    if not os.path.isfile(rssfeedsfile):
+        setup_rssfeedsfile()
+
+    with open(rssfeedsfile, 'r') as f:
+        try:
+            rss_feeds = json.load(f)
+        except json.JSONDecodeError:
+            sys.exit("You must add RSS feeds to the RSS feeds list, located at {}.".format(rssfeedsfile))
 
     for feed in rss_feeds:
         outlet = feed['outlet']

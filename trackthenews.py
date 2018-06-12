@@ -216,8 +216,14 @@ def setup_db(config):
     database = os.path.join(home, config['db'])
     if not os.path.isfile(database):
         conn = sqlite3.connect(database)
-        with open('schema.sql') as f:
-            schema_script = f.read()
+        schema_script = """create table articles (
+            id          integer primary key autoincrement not null,
+            title       text,
+            outlet      text,
+            url         text,
+            tweeted     boolean,
+            recorded_at datetime
+        );"""
         conn.executescript(schema_script)
         conn.commit()
         conn.close()

@@ -103,7 +103,9 @@ class Article:
             except TwythonError:
                 pass
 
-        status = "{}: {} {}".format(self.outlet, self.title, self.url)
+        source = self.outlet + ": " if self.outlet else ''
+
+        status = "{}{} {}".format(source, self.title, self.url)
         twitter.update_status(status=status, media_ids=media_ids)
         print(status)
 
@@ -365,7 +367,7 @@ def main():
             sys.exit("You must add RSS feeds to the RSS feeds list, located at {}.".format(rssfeedsfile))
 
     for feed in rss_feeds:
-        outlet = feed['outlet']
+        outlet = feed['outlet'] if 'outlet' in feed else ''
         url = feed['url']
         delicate = True if 'delicateURLs' in feed and feed['delicateURLs'] \
                 else False

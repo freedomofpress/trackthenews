@@ -3,3 +3,4 @@ rssfeeds.json
 matchwords.txt
 __pycache__/*
 *.db
+ttnconfig/*

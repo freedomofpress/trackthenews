@@ -8,7 +8,7 @@ If you want to run your own instance of `trackthenews`, you can download and ins
 python3 trackthenews --config
 ```
 
-By default, the script will place all configuration files in a new `trackthenews` folder in your current working directory, but you can also designate a directory for it to use.
+By default, the script will place all configuration files in a new `ttnconfig` folder in your current working directory, but you can also designate a directory for it to use.
 
 ```bash
 python3 trackthenews --config ~/foo/bar/path

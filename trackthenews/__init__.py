@@ -303,7 +303,7 @@ def main():
             action="store_true")
     parser.add_argument('dir', nargs='?',
             help="The directory to store or find the configuration files.",
-            default=os.path.join(os.getcwd(), 'trackthenews'))
+            default=os.path.join(os.getcwd(), 'ttnconfig'))
 
     args = parser.parse_args()
     

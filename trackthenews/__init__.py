@@ -27,6 +27,9 @@ from twython import Twython, TwythonError
 
 # TODO: add/remove RSS feeds from within the script.
 # Currently the matchwords list and RSS feeds list must be edited separately.
+# TODO: add support for additional parsers beyond readability
+# readability doesn't work very well on NYT, which requires something custom
+# TODO: add other forms of output beyond a Twitter bot
 
 class Article:
     def __init__(self, outlet, title, url, delicate=False, redirects=False):
@@ -278,7 +281,7 @@ def initial_setup():
     if 'user-agent' not in config:
         ua = input("What would you like your script's user-agent to be? This should be something that is meaningful to you and may show up in the logs of the sites you are tracking. ")
 
-        ua = ua + " / trackthenews"
+        ua = ua + " / powered by trackthenews (a project of freedom.press)"
 
         config['user-agent'] = ua
 

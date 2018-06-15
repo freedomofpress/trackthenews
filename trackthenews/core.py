@@ -342,7 +342,7 @@ def main():
 
     global matchwords
     with open(matchlist, 'r') as f:
-        matchwords = f.read().split('\n')[:-1]
+        matchwords = [word for word in f.read().split('\n') if word]
         if not matchwords:
             sys.exit("You must add words to the matchwords list, located at {}.".format(matchlist))
 

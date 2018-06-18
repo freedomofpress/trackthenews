@@ -136,8 +136,10 @@ def get_textsize(graf, width, fnt, spacing):
 
 def render_img(graf, width=60, square=False):
     """Take a paragraph and render an Image of it on a plain background."""
-    font_name = 'LiberationSerif-Regular.ttf'
-    fnt = ImageFont.truetype(font_name, size=36)
+    font_name = config['font']
+    font_dir = os.path.join(os.path.dirname(__file__), 'fonts')
+    font_path = os.path.join(font_dir, font_name)
+    fnt = ImageFont.truetype(font_path, size=36)
     spacing = 12 # Just a nice spacing number, visually
 
     graf = graf.lstrip('#>—-• ')
@@ -288,6 +290,9 @@ def initial_setup():
     if 'color' not in config:
         config['color'] = '#F5F5F5'
 
+    if 'font' not in config:
+        config['font'] = 'NotoSerif-Regular.ttf'
+
     setup_matchlist()
     setup_rssfeedsfile()
     setup_db(config)
@@ -390,7 +395,11 @@ def main():
             print('Checking {} article {}/{}'.format(
                 article.outlet, counter, len(articles)))
 
-            article.check_for_matches()
+            try:
+                article.check_for_matches()
+            except:
+                print('Having trouble with that article. Skipping for now.')
+                pass
 
             if article.matching_grafs:
                 print("Got one!")

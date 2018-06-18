@@ -11,7 +11,7 @@ with open('LICENSE') as f:
 
 setup(
     name='trackthenews',
-    version='0.1.6',
+    version='0.1.6.5',
     description='Monitor RSS feeds for keywords and act on matching results. A special project of the Freedom of the Press Foundation.',
     long_description=readme,
     install_requires=reqs,
@@ -21,6 +21,15 @@ setup(
     entry_points={
         'console_scripts': ['trackthenews=trackthenews:main']
     },
+    package_data={
+        'trackthenews': ['fonts/*']
+    },
+    include_package_data=True,
     license=license,
-    packages=find_packages(exclude=('ttn-config'))
+    classifiers=[
+        'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.6'],
+    packages=find_packages(exclude=('ttnconfig',))
 )

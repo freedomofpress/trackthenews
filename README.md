@@ -1,11 +1,23 @@
 # Track The News
 
-`trackthenews` is the script that powers [@FOIAfeed](https://twitter.com/foiafeed), a Twitter bot that monitors news outlets for reporting that incorporates public records laws like the Freedom of Information Act (FOIA), and tweets links to and excerpts from matching articles.
+`trackthenews` is the script that powers [@FOIAfeed](https://twitter.com/foiafeed), a Twitter bot that monitors news outlets for reporting that incorporates public records laws like the Freedom of Information Act (FOIA), and tweets links to and excerpts from matching articles. The underlying software can track any collection of RSS feeds for any keywords.
 
-If you want to run your own instance of `trackthenews`, you can download and install the package, and run its built-in configuration process:
+If you want to run your own instance of `trackthenews`, you can download and install the package, and run its built-in configuration process. It can be installed with `pip`:
 
 ```bash
-python3 trackthenews --config
+pip3 install trackthenews
+```
+
+or by cloning the GitHub repository and running `setup.py`:
+
+```bash
+python3 setup.py install
+```
+
+Once it is installed, you can create a configuration by running the following command in the appropriate directory:
+
+```bash
+trackthenews --config
 ```
 
 By default, the script will place all configuration files in a new `ttnconfig` folder in your current working directory, but you can also designate a directory for it to use.
@@ -18,6 +30,8 @@ That configuration process will create the necessary files and walk you through 
 
 Once you've got everything set up, you can run the program without the `--config` flag to check for matching articles. If you designated a custom installation directory, or if you're running it from another directory (or a `cron` job, for example) you will need to designate the directory in which the configuration files are installed.
 
+Settings, such as the background color for new posts, the font, and the user-agent, are all located in `config.yaml`, in the designated configuration directory. 
+
 ## How it works
 
 Most of the script is dedicated to the `Article` class.
@@ -26,3 +40,7 @@ Most of the script is dedicated to the `Article` class.
 * Finally, the `Article` tweets itself.
 
 All articles are recorded in a sqlite database.
+
+### Advanced feature: blocklist
+
+In some cases, you may wish to suppress articles from being posted, even though they would otherwise match. You can do so by writing a new function, `check`, and placing it in a file named `blocklist.py` in the configuration directory. `check` takes an Article (and so has access to its `outlet`, `title`, and `url`) and should return `true` for any article that should be skipped.

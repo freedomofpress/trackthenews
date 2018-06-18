@@ -11,7 +11,7 @@ with open('LICENSE') as f:
 
 setup(
     name='trackthenews',
-    version='0.1.6.5',
+    version='0.1.8',
     description='Monitor RSS feeds for keywords and act on matching results. A special project of the Freedom of the Press Foundation.',
     long_description=readme,
     install_requires=reqs,

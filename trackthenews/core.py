@@ -114,6 +114,7 @@ class Article:
 
         self.tweeted = True
 
+
 def get_twitter_instance():
     """Return an authenticated twitter instance."""
     app_key = config['twitter']['api_key']
@@ -133,6 +134,7 @@ def get_textsize(graf, width, fnt, spacing):
     textsize = text_width, line_spacing * len(wrapped_graf)
 
     return textsize
+
 
 def render_img(graf, width=60, square=False):
     """Take a paragraph and render an Image of it on a plain background."""
@@ -163,10 +165,12 @@ def render_img(graf, width=60, square=False):
 
     return im
 
+
 def decruft_url(url):
     """Attempt to remove extraneous characters from a given URL and return it."""
     url = url.split('?')[0].split('#')[0]
     return url
+
 
 def parse_feed(outlet, url, delicate, redirects):
     """Take the URL of an RSS feed and return a list of Article objects."""
@@ -183,6 +187,7 @@ def parse_feed(outlet, url, delicate, redirects):
         articles.append(article)
 
     return articles
+
 
 def config_twitter(config):
     if 'twitter' in config.keys():
@@ -235,6 +240,7 @@ def setup_db(config):
         conn.commit()
         conn.close()
 
+
 def setup_matchlist():
     path = os.path.join(home, 'matchlist.txt')
     
@@ -248,6 +254,7 @@ def setup_matchlist():
     
     return
 
+
 def setup_rssfeedsfile():
     path = os.path.join(home, 'rssfeeds.json')
 
@@ -260,6 +267,7 @@ def setup_rssfeedsfile():
             print("A new RSS feeds file has been generated at {path}.".format(**locals()))
 
     return
+
 
 def initial_setup():
     configfile = os.path.join(home, 'config.yaml')
@@ -298,11 +306,11 @@ def initial_setup():
     setup_db(config)
     config = config_twitter(config)
 
-
     with open(configfile, "w") as f:
         yaml.dump(config, f, default_flow_style=False)
 
     return config
+
 
 def main():
     parser = argparse.ArgumentParser(description="Track articles from RSS feeds for a custom list of keywords and act on the matches.")

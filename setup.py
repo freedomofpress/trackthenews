@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 with open('requirements.txt') as f:
     reqs = f.read().split()
 
-with open('README') as f:
+with open('README.rst') as f:
     readme = f.read()
 
 with open('LICENSE') as f:
@@ -11,7 +11,7 @@ with open('LICENSE') as f:
 
 setup(
     name='trackthenews',
-    version='0.1.8.4',
+    version='0.1.8.5',
     description='Monitor RSS feeds for keywords and act on matching results. A special project of the Freedom of the Press Foundation.',
     long_description=readme,
     install_requires=reqs,

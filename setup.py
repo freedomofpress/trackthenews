@@ -3,15 +3,12 @@ from setuptools import setup, find_packages
 with open('requirements.txt') as f:
     reqs = f.read().split()
 
-with open('README') as f:
+with open('README.md') as f:
     readme = f.read()
-
-with open('LICENSE') as f:
-    license = f.read()
 
 setup(
     name='trackthenews',
-    version='0.1.8.6',
+    version='0.1.8.13',
     description='Monitor RSS feeds for keywords and act on matching results. A special project of the Freedom of the Press Foundation.',
     long_description=readme,
     long_description_content_type='text/markdown',
@@ -26,7 +23,7 @@ setup(
         'trackthenews': ['fonts/*']
     },
     include_package_data=True,
-    license=license,
+    license='MIT',
     classifiers=[
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',

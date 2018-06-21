@@ -84,7 +84,8 @@ class Article:
             pass
         else:
             for graf in plaintext_grafs:
-                if any(word.lower() in graf.lower() for word in matchwords):
+                if (any(word.lower() in graf.lower() for word in matchwords) or \
+                    any(word in graf for word in matchwords_case_sensitive)):
                     self.matching_grafs.append(graf)
 
     def tweet(self):
@@ -245,14 +246,21 @@ def setup_db(config):
 
 def setup_matchlist():
     path = os.path.join(home, 'matchlist.txt')
+    path_case_sensitive = os.path.join(home, 'matchlist_case_sensitive.txt')
     
     if os.path.isfile(path):
         print("A matchlist already exists at {path}.".format(**locals()))
-        return
-    
-    with open(path, 'w') as f:
-        f.write('')
+    else:
+        with open(path, 'w') as f:
+            f.write('')
         print("A new matchlist has been generated at {path}. You can add case insensitive entries to match, one per line.".format(**locals()))
+       
+    if os.path.isfile(path_case_sensitive):
+            print("A case-sensitive matchlist already exists at {path_case_sensitive}.".format(**locals()))
+    else:
+        with open(path_case_sensitive, 'w') as f:
+            f.write('')
+        print("A new case-sensitive matchlist has been generated at {path_case_sensitive}. You can add case-sensitive entries to match, one per line.".format(**locals()))
     
     return
 
@@ -358,14 +366,20 @@ def main():
     conn = sqlite3.connect(database)
 
     matchlist = os.path.join(home, 'matchlist.txt')
-    if not os.path.isfile(matchlist):
+    matchlist_case_sensitive = os.path.join(home, 'matchlist_case_sensitive.txt')
+    if not (os.path.isfile(matchlist) and \
+            os.path.isfile(matchlist_case_sensitive)):
         setup_matchlist()
 
     global matchwords
+    global matchwords_case_sensitive
     with open(matchlist, 'r') as f:
-        matchwords = [word for word in f.read().split('\n') if word]
-        if not matchwords:
-            sys.exit("You must add words to the matchwords list, located at {}.".format(matchlist))
+        matchwords = [w for w in f.read().split('\n') if w]
+    with open(matchlist_case_sensitive, 'r') as f:
+        matchwords_case_sensitive = [w for w in f.read().split('\n') if w]
+ 
+    if not (matchwords or matchwords_case_sensitive):
+            sys.exit("You must add words to at least one of the matchwords lists, located at {} and {}.".format(matchlist, matchlist_case_sensitive))
 
     sys.path.append(home)
     global blocklist_loaded
@@ -378,7 +392,11 @@ def main():
         blocklist_loaded = False
         print("No blocklist to load.")
 
-    print("Matching against the following words: {}".format(matchwords))
+    if matchwords:
+        print("Matching against the following words: {}".format(matchwords))
+    if matchwords_case_sensitive:
+        print("Matching against the following case-sensitive words: {}".format(
+            matchwords_case_sensitive))
 
     rssfeedsfile = os.path.join(home, 'rssfeeds.json')
     if not os.path.isfile(rssfeedsfile):

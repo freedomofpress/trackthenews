@@ -15,6 +15,7 @@ import sys
 
 from datetime import datetime
 from io import BytesIO
+from builtins import input
 
 import feedparser
 import html2text
@@ -284,7 +285,13 @@ def initial_setup():
         if to_configure.lower() in ['n','no','q','exit','quit']:
             sys.exit("Ok, quitting the program without configuring.")
 
-    os.makedirs(home, exist_ok=True)
+    if sys.version_info.major > 2:
+        os.makedirs(home, exist_ok=True)
+    else:
+        try:
+            os.makedirs(home)
+        except:
+            pass
 
     if 'db' not in config:
         config['db'] = 'trackthenews.db'

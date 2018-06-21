@@ -1,7 +1,8 @@
-#!/usr/bin/env python3
 # Parses a collection of news outlet RSS feeds for recently published articles,
 # then converts those articles to plaintext and searches them for mentions of
 # given words or phrases, and posts the results to Twitter.
+
+from __future__ import unicode_literals
 
 import argparse
 import importlib

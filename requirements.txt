@@ -7,3 +7,4 @@ readability-lxml==0.6.2
 pyaml==17.12.1
 requests==2.18.4
 twython==3.6.0
+future==0.16.0

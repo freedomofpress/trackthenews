@@ -1,7 +1,8 @@
-#!/usr/bin/env python3
 # Parses a collection of news outlet RSS feeds for recently published articles,
 # then converts those articles to plaintext and searches them for mentions of
 # given words or phrases, and posts the results to Twitter.
+
+from __future__ import unicode_literals
 
 import argparse
 import importlib
@@ -14,6 +15,7 @@ import sys
 
 from datetime import datetime
 from io import BytesIO
+from builtins import input
 
 import feedparser
 import html2text
@@ -283,7 +285,13 @@ def initial_setup():
         if to_configure.lower() in ['n','no','q','exit','quit']:
             sys.exit("Ok, quitting the program without configuring.")
 
-    os.makedirs(home, exist_ok=True)
+    if sys.version_info.major > 2:
+        os.makedirs(home, exist_ok=True)
+    else:
+        try:
+            os.makedirs(home)
+        except:
+            pass
 
     if 'db' not in config:
         config['db'] = 'trackthenews.db'

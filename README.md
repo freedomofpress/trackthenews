@@ -4,6 +4,9 @@
 
 If you want to run your own instance of `trackthenews`, you can download and install the package, and run its built-in configuration process. It can be installed with `pip`:
 
+Python 3.6 is recommend but if you run [into troubles](https://github.com/thisisparker/track-the-news/issues/1), try it with Python 2.7.
+
+
 ```bash
 pip3 install trackthenews
 ```
@@ -28,7 +31,17 @@ python3 trackthenews --config ~/foo/bar/path
 
 That configuration process will create the necessary files and walk you through setting up a Twitter bot for matching stories. After it is configured, you'll need to use a text editor to add the `matchwords` and RSS feeds to their respective files.
 
-Once you've got everything set up, you can run the program without the `--config` flag to check for matching articles. If you designated a custom installation directory, or if you're running it from another directory (or a `cron` job, for example) you will need to designate the directory in which the configuration files are installed.
+Once you've got everything set up, you can run the program without the `--config` flag to check for matching articles.
+
+```bash
+trackthenews
+```
+
+If you designated a custom installation directory, or if you're running it from another directory (or a `cron` job, for example) you will need to designate the directory in which the configuration files are installed.
+
+```bash
+trackthenews ~/foo/bar/path
+```
 
 Settings, such as the background color for new posts, the font, and the user-agent, are all located in `config.yaml`, in the designated configuration directory. 
 
@@ -44,3 +57,7 @@ All articles are recorded in a sqlite database.
 ### Advanced feature: blocklist
 
 In some cases, you may wish to suppress articles from being posted, even though they would otherwise match. You can do so by writing a new function, `check`, and placing it in a file named `blocklist.py` in the configuration directory. `check` takes an Article (and so has access to its `outlet`, `title`, and `url`) and should return `true` for any article that should be skipped.
+
+## License
+
+MIT.

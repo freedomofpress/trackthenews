@@ -417,17 +417,18 @@ def main():
                 else False
 
         articles = parse_feed(outlet, url, delicate, redirects)
+        deduped = []
 
-        recent_urls = [entry[0] for entry in list(conn.execute(
-            'select url from articles where outlet=? \
-             order by id desc limit 2000', (outlet,)))]
+        for article in articles:
+            article_exists = conn.execute('select * from articles where url = ?',
+                    (article.url,)).fetchall()
+            if not article_exists:
+                deduped.append(article)
 
-        articles = [a for a in articles if a.url and a.url not in recent_urls]
-
-        for counter, article in enumerate(articles, 1):
+        for counter, article in enumerate(deduped, 1):
 
             print('Checking {} article {}/{}'.format(
-                article.outlet, counter, len(articles)))
+                article.outlet, counter, len(deduped)))
 
             try:
                 article.check_for_matches()

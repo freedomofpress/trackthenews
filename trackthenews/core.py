@@ -363,7 +363,8 @@ def main():
     if not os.path.isfile(database):
         setup_db(config)
 
-    conn = sqlite3.connect(database)
+    conn = sqlite3.connect(database, isolation_level='EXCLUSIVE')
+    conn.execute('BEGIN EXCLUSIVE')
 
     matchlist = os.path.join(home, 'matchlist.txt')
     matchlist_case_sensitive = os.path.join(home, 'matchlist_case_sensitive.txt')
@@ -426,6 +427,8 @@ def main():
                 deduped.append(article)
 
         for counter, article in enumerate(deduped, 1):
+            # aquire exclusive access here since changes are commited later int he loop
+            conn.execute('BEGIN EXCLUSIVE')
 
             print('Checking {} article {}/{}'.format(
                 article.outlet, counter, len(deduped)))

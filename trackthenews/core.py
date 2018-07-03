@@ -51,7 +51,7 @@ class Article:
         # These outlets use redirect links in their RSS feeds.
         # Follow those links, then store only the final destination.
         if self.redirects:
-            res = requests.head(self.url, allow_redirects=True)
+            res = requests.head(self.url, allow_redirects=True, timeout=30)
             self.url = res.headers['location'] if 'location' in res.headers \
                 else res.url
 
@@ -62,7 +62,7 @@ class Article:
 
     def clean(self):
         """Download the article and strip it of HTML formatting."""
-        self.res = requests.get(self.url, headers={'User-Agent':ua})
+        self.res = requests.get(self.url, headers={'User-Agent':ua}, timeout=30)
         doc = Document(self.res.text)
 
         h = html2text.HTML2Text()

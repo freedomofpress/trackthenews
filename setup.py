@@ -8,7 +8,7 @@ with open('README.md') as f:
 
 setup(
     name='trackthenews',
-    version='0.1.9',
+    version='0.1.9.1',
     description='Monitor RSS feeds for keywords and act on matching results. A special project of the Freedom of the Press Foundation.',
     long_description=readme,
     long_description_content_type='text/markdown',

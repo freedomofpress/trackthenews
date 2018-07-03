@@ -4,7 +4,7 @@
 
 If you want to run your own instance of `trackthenews`, you can download and install the package, and run its built-in configuration process. It can be installed with `pip`:
 
-Python 3.6 is recommend but if you run [into troubles](https://github.com/thisisparker/track-the-news/issues/1), try it with Python 2.7.
+Python 3.6 is recommend, but if you run [into troubles](https://github.com/freedomofpress/trackthenews/issues/1), you may want to try it with Python 2.7.
 
 
 ```bash
@@ -30,6 +30,8 @@ python3 trackthenews --config ~/foo/bar/path
 ```
 
 That configuration process will create the necessary files and walk you through setting up a Twitter bot for matching stories. After it is configured, you'll need to use a text editor to add the `matchwords` and RSS feeds to their respective files.
+
+Sample RSS feed and matchword files can be found in the project's GitHub repo. The RSS feed file is a JSON array of objects corresponding to each feed. Each object requires a `url` field, and should also have an `outlet` field. The next two fields are optional: if you know the feed uses redirect URLs, you may set `redirectLinks` to `true` and the script will attempt to follow those redirects to store and tweet canonical URLs; if the feed uses URLs that depend on query- or hash-strings to display correctly—basically, if the content relies on text in the URL bar after a `?` or `#`—you can set `delicateURLs` to `true` and the script will leave the URLs exactly as is.
 
 Once you've got everything set up, you can run the program without the `--config` flag to check for matching articles.
 

@@ -12,6 +12,7 @@ import sqlite3
 import time
 import textwrap
 import sys
+import io
 
 from datetime import datetime
 from io import BytesIO
@@ -283,7 +284,7 @@ def initial_setup():
     configfile = os.path.join(home, 'config.yaml')
 
     if os.path.isfile(configfile):
-        with open(configfile, 'r', encoding="utf-8") as f:
+        with io.open(configfile, 'r', encoding="utf-8") as f:
             config = yaml.load(f)
     else:
         to_configure = input("It looks like this is the first time you've run trackthenews, or you've moved or deleted its configuration files.\nWould you like to create a new configuration in {}? (Y/n) ".format(home))
@@ -353,7 +354,7 @@ def main():
         initial_setup()
 
     global config
-    with open(configfile, encoding="utf-8") as f:
+    with io.open(configfile, encoding="utf-8") as f:
         config = yaml.load(f)
 
     global ua
@@ -374,9 +375,9 @@ def main():
 
     global matchwords
     global matchwords_case_sensitive
-    with open(matchlist, 'r', encoding="utf-8") as f:
+    with io.open(matchlist, 'r', encoding="utf-8") as f:
         matchwords = [w for w in f.read().split('\n') if w]
-    with open(matchlist_case_sensitive, 'r', encoding="utf-8") as f:
+    with io.open(matchlist_case_sensitive, 'r', encoding="utf-8") as f:
         matchwords_case_sensitive = [w for w in f.read().split('\n') if w]
  
     if not (matchwords or matchwords_case_sensitive):
@@ -403,7 +404,7 @@ def main():
     if not os.path.isfile(rssfeedsfile):
         setup_rssfeedsfile()
 
-    with open(rssfeedsfile, 'r', encoding="utf-8") as f:
+    with io.open(rssfeedsfile, 'r', encoding="utf-8") as f:
         try:
             rss_feeds = json.load(f)
         except json.JSONDecodeError:

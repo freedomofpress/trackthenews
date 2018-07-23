@@ -232,7 +232,7 @@ def setup_db(config):
     if not os.path.isfile(database):
         conn = sqlite3.connect(database)
         schema_script = """create table articles (
-            id          integer primary key autoincrement not null,
+            id          integer primary key not null,
             title       text,
             outlet      text,
             url         text,
@@ -427,9 +427,6 @@ def main():
                 deduped.append(article)
 
         for counter, article in enumerate(deduped, 1):
-            # aquire exclusive access here since changes are commited later int he loop
-            conn.execute('BEGIN EXCLUSIVE')
-
             print('Checking {} article {}/{}'.format(
                 article.outlet, counter, len(deduped)))
 

@@ -186,6 +186,10 @@ def parse_feed(outlet, url, delicate, redirects):
         title = entry.get('title', '')
         url = entry.get('link', '')
 
+        if not url:
+            print("Entry is missing a URL. Skipping!")
+            continue
+
         article = Article(outlet, title, url, delicate, redirects)
 
         articles.append(article)

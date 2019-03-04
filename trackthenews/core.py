@@ -182,9 +182,14 @@ def parse_feed(outlet, url, delicate, redirects):
     articles = []
 
     for entry in feed['entries']:
-        title = entry['title']
-        url = entry['link']
-        
+        """If for some reason the entry is missing a title or URL, just leave them empty."""
+        title = entry.get('title', '')
+        url = entry.get('link', '')
+
+        if not url:
+            print("Entry is missing a URL. Skipping!")
+            continue
+
         article = Article(outlet, title, url, delicate, redirects)
 
         articles.append(article)

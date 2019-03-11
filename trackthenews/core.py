@@ -111,7 +111,17 @@ class Article:
 
         source = self.outlet + ": " if self.outlet else ''
 
-        status = "{}{} {}".format(source, self.title, self.url)
+        # Truncate title to fit in remaining characters.
+        # As of 2019-03-03:
+        # - Tweets can be 280 characters.
+        # - Minus the length of the `source` string.
+        # - Minus three more characters for the ellipsis (a two-byte character) and space between the title and the URL.
+        # - Links count for 23 characters once they've been wrapped in a t.co URL.
+        remaining_chars = 280 - len(source) - 3 - 23
+        title = (self.title[:remaining_chars] + '…') if len(self.title) > remaining_chars else self.title
+
+        status = "{}{} {}".format(source, title, self.url)
+
         twitter.update_status(status=status, media_ids=media_ids)
         print(status)
 
@@ -182,9 +192,14 @@ def parse_feed(outlet, url, delicate, redirects):
     articles = []
 
     for entry in feed['entries']:
-        title = entry['title']
-        url = entry['link']
-        
+        """If for some reason the entry is missing a title or URL, just leave them empty."""
+        title = entry.get('title', '')
+        url = entry.get('link', '')
+
+        if not url:
+            print("Entry is missing a URL. Skipping!")
+            continue
+
         article = Article(outlet, title, url, delicate, redirects)
 
         articles.append(article)

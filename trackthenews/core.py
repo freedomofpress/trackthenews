@@ -378,8 +378,7 @@ def main():
     if not os.path.isfile(database):
         setup_db(config)
 
-    conn = sqlite3.connect(database, isolation_level='EXCLUSIVE')
-    conn.execute('BEGIN EXCLUSIVE')
+    conn = sqlite3.connect(database)
 
     matchlist = os.path.join(home, 'matchlist.txt')
     matchlist_case_sensitive = os.path.join(home, 'matchlist_case_sensitive.txt')

@@ -90,9 +90,19 @@ class Article:
 
     def tweet(self):
         """Send images to be rendered and tweet them with a text status."""
-        square = False if len(self.matching_grafs) == 1 else True
+        num_tweets = 4 if len(self.matching_grafs) >= 4 else len(self.matching_grafs)
+
+        if num_tweets == 1:
+            ratios = [2/1]
+        elif num_tweets == 2:
+            ratios = [7/8, 7/8]
+        elif num_tweets == 3:
+            ratios = [7/8, 7/4, 7/4]
+        elif num_tweets == 4:
+            ratios = [2/1, 2/1, 2/1, 2/1]
+
         for graf in self.matching_grafs[:4]:
-            self.imgs.append(render_img(graf, square=square))
+            self.imgs.append(render_img(graf, ratio=ratios.pop(0)))
 
         twitter = get_twitter_instance()
 
@@ -149,7 +159,7 @@ def get_textsize(graf, width, fnt, spacing):
     return textsize
 
 
-def render_img(graf, width=60, square=False):
+def render_img(graf, width=60, ratio=None):
     """Take a paragraph and render an Image of it on a plain background."""
     font_name = config['font']
     font_dir = os.path.join(os.path.dirname(__file__), 'fonts')
@@ -159,10 +169,10 @@ def render_img(graf, width=60, square=False):
 
     graf = graf.lstrip('#>—-• ')
 
-    if square is True:
+    if ratio:
         ts = {w: get_textsize(graf, w, fnt, spacing) \
                 for w in range(20, width)}
-        width = min(ts, key=lambda w: abs(ts.get(w)[1]-ts.get(w)[0]))
+        width = min(ts, key=lambda w: abs(ratio - (ts.get(w)[0]/ts.get(w)[1])))
 
     textsize = get_textsize(graf, width, fnt, spacing)
     wrapped = '\n'.join(textwrap.wrap(graf, width))

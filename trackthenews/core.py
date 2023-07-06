@@ -213,7 +213,7 @@ def config_twitter(config):
         if replace.lower() in ['n','no']:
             return config
 
-    input("Create a new Twitter app at https://apps.twitter.com/app/new to post matching stories. For this step, you can be logged in as yourself or with the posting account, if they're different. Fill out Name, Description, and Website with values meaningful to you. These are not used in trackthenews config but may be publicly visible. Then click the \"Keys and Access Tokens\" tab. ")
+    input("Create a new Twitter app at https://developer.twitter.com/en/portal/projects-and-apps to post matching stories. For this step, you can be logged in as yourself or with the posting account, if they're different. Fill out Name, Description, and Website with values meaningful to you. These are not used in trackthenews config but may be publicly visible. Then click the \"Keys and Access Tokens\" tab. ")
 
     api_key = input("Enter the provided API key: ")
     api_secret = input("Enter the provided API secret: ")

@@ -1,10 +1,9 @@
-beautifulsoup4==4.7.1
-bs4==0.0.1
-feedparser==5.2.1
+beautifulsoup4==4.12.2
+feedparser==6.0.10
 future==0.17.1
 html2text==2018.1.9
-Pillow==6.2.0
+Pillow==8.4
 pyaml==18.11.0
 readability-lxml==0.7
-requests==2.21.0
+requests==2.31.0
 twython==3.7.0

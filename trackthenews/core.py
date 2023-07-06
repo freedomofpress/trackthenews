@@ -26,6 +26,7 @@ import yaml
 
 from PIL import Image, ImageDraw, ImageFont
 from readability import Document
+from mastodon import Mastodon, MastodonNetworkError, MastodonError
 import tweepy
 
 # TODO: add/remove RSS feeds from within the script.
@@ -89,32 +90,44 @@ class Article:
                     any(word in graf for word in matchwords_case_sensitive)):
                     self.matching_grafs.append(graf)
 
-    def tweet(self):
-        """Send images to be rendered and tweet them with a text status."""
-        square = False if len(self.matching_grafs) == 1 else True
+    def prepare_images(self, square):
+        """Prepares the images for upload."""
+        img_files = []
         for graf in self.matching_grafs[:4]:
             self.imgs.append(render_img(graf, square=square))
 
-        img_files = []
         for img in self.imgs:
             img_io = BytesIO()
             img.save(img_io, format='jpeg', quality=95)
             img_io.seek(0)
             img_files.append(img_io)
 
+        return img_files
+
+    def truncate_title(self, max_chars, source, link_characters=23):
+        """Truncates the title to fit within the character limit."""
+
+        # Ellipsis is a two-byte character; links have fixed length on Twitter and Mastodon
+        remaining_chars = max_chars - len(source) - 3 - link_characters
+        title = (self.title[:remaining_chars] + '…') if len(self.title) > remaining_chars else self.title
+        return title
+
+    def tweet(self):
+        """Send images to be rendered and tweet them with a text status."""
+        if 'twitter' not in config:
+            print("Twitter is not configured. Skipping tweet.")
+            return
+
+        square = False if len(self.matching_grafs) == 1 else True
+        img_files = self.prepare_images(square)
+
         media = upload_twitter_images(img_files)
         media_ids = [m.media_id for m in media]
 
         source = self.outlet + ": " if self.outlet else ''
 
-        # Truncate title to fit in remaining characters.
-        # As of 2019-03-03:
-        # - Tweets can be 280 characters.
-        # - Minus the length of the `source` string.
-        # - Minus three more characters for the ellipsis (a two-byte character) and space between the title and the URL.
-        # - Links count for 23 characters once they've been wrapped in a t.co URL.
-        remaining_chars = 280 - len(source) - 3 - 23
-        title = (self.title[:remaining_chars] + '…') if len(self.title) > remaining_chars else self.title
+        # Tweets can be 280 characters
+        title = self.truncate_title(280, source)
 
         content = "{}{} {}".format(source, title, self.url)
 
@@ -126,6 +139,47 @@ class Article:
             pass
 
         self.tweeted = True
+
+    def toot(self):
+        """Send images to be rendered and toot them with a text status."""
+        if 'mastodon' not in config:
+            print("Mastodon is not configured. Skipping toot.")
+            return
+
+        square = False if len(self.matching_grafs) == 1 else True
+        img_files = self.prepare_images(square)
+
+        mastodon = get_mastodon_instance()
+        media_ids = []
+
+        for img_file in img_files:
+            try:
+                res = mastodon.media_post(img_file, mime_type='image/jpeg')
+                media_ids.append(res['id'])
+            except MastodonError:
+                pass
+
+        source = self.outlet + ": " if self.outlet else ''
+
+        # Toots can be 500 characters
+        title = self.truncate_title(500, source)
+
+        status = "{}{} {}".format(source, title, self.url)
+
+        mastodon.status_post(status=status, media_ids=media_ids)
+
+        self.tooted = True
+
+
+def get_mastodon_instance():
+    """Return an authenticated Mastodon instance."""
+    api_base_url = config['mastodon']['api_base_url']
+    access_token = config['mastodon']['access_token']
+
+    return Mastodon(
+        access_token=access_token,
+        api_base_url=api_base_url
+    )
 
 
 def get_twitter_client():
@@ -244,6 +298,11 @@ def parse_feed(outlet, url, delicate, redirects):
 
 
 def config_twitter(config):
+
+    twitter_setup = input("Would you like the bot to post to Twitter? (Y/n) ")
+    if twitter_setup.lower().startswith('n'):
+        return config
+
     if 'twitter' in config.keys():
         replace = input("Twitter configuration already exists. Replace? (Y/n) ")
         if replace.lower() in ['n','no']:
@@ -270,6 +329,42 @@ def config_twitter(config):
     config['twitter'] = twitter 
 
     return config
+
+
+def config_mastodon(config):
+    mastodon_setup = input("Would you like the bot to post to Mastodon? (Y/n) ")
+    if mastodon_setup.lower().startswith('n'):
+        return config
+
+    if 'mastodon' in config.keys():
+        replace = input("Mastodon configuration already exists. Replace? (Y/n) ")
+        if replace.lower() in ['n','no']:
+            return config
+
+    api_base_url = input("Enter your Mastodon instance URL (e.g., 'https://mastodon.social'): ")
+    access_token = input("Enter your access token: ")
+
+    # Verify the credentials by making a request to the API
+    mastodon_client = Mastodon(
+        access_token=access_token,
+        api_base_url=api_base_url
+    )
+    try:
+        mastodon_client.account_verify_credentials()
+        print("Credentials verified successfully.")
+    except MastodonNetworkError:
+        print("Error: Could not verify credentials. Please check the entered values.")
+        return config
+
+    mastodon = {
+        'api_base_url': api_base_url,
+        'access_token': access_token
+    }
+
+    config['mastodon'] = mastodon
+
+    return config
+
 
 def setup_db(config):
     database = os.path.join(home, config['db'])
@@ -365,6 +460,12 @@ def initial_setup():
     setup_rssfeedsfile()
     setup_db(config)
     config = config_twitter(config)
+    config = config_mastodon(config)
+
+    # check if either Twitter or Mastodon has been configured
+    if 'twitter' not in config and 'mastodon' not in config:
+        print("Error: The bot must have at least one of Twitter or Mastodon configured.")
+        sys.exit(1)
 
     with open(configfile, "w") as f:
         yaml.dump(config, f, default_flow_style=False)
@@ -482,6 +583,7 @@ def main():
             if article.matching_grafs:
                 print("Got one!")
                 article.tweet()
+                article.toot()
 
             conn.execute("""insert into articles(
                          title, outlet, url, tweeted,recorded_at)

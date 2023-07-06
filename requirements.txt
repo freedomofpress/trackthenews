@@ -6,4 +6,4 @@ Pillow==8.4
 pyaml==18.11.0
 readability-lxml==0.7
 requests==2.31.0
-twython==3.7.0
+tweepy==4.14.0

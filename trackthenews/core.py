@@ -4,6 +4,8 @@
 
 from __future__ import unicode_literals
 
+from typing import IO, Iterable, List
+
 import argparse
 import importlib
 import json
@@ -25,7 +27,7 @@ import yaml
 from bs4 import BeautifulSoup
 from PIL import Image, ImageDraw, ImageFont
 from readability import Document
-from twython import Twython, TwythonError
+import tweepy
 
 # TODO: add/remove RSS feeds from within the script.
 # Currently the matchwords list and RSS feeds list must be edited separately.
@@ -94,20 +96,18 @@ class Article:
         for graf in self.matching_grafs[:4]:
             self.imgs.append(render_img(graf, square=square))
 
-        twitter = get_twitter_instance()
-
-        media_ids = []
-
+        img_files = []
         for img in self.imgs:
             try:
                 img_io = BytesIO()
                 img.save(img_io, format='jpeg', quality=95)
                 img_io.seek(0)
-                res = twitter.upload_media(media=img_io)
-
-                media_ids.append(res['media_id'])
-            except TwythonError:
+                img_files.append(img_io)
+            except tweepy.errors.TweepyException:
                 pass
+
+        media = upload_twitter_images(img_files)
+        media_ids = [m.media_id for m in media]
 
         source = self.outlet + ": " if self.outlet else ''
 
@@ -120,22 +120,62 @@ class Article:
         remaining_chars = 280 - len(source) - 3 - 23
         title = (self.title[:remaining_chars] + '…') if len(self.title) > remaining_chars else self.title
 
-        status = "{}{} {}".format(source, title, self.url)
+        content = "{}{} {}".format(source, title, self.url)
 
-        twitter.update_status(status=status, media_ids=media_ids)
-        print(status)
+        twitter = get_twitter_client()
+        try:
+            twitter.create_tweet(text=content, media_ids=media_ids)
+        except tweepy.errors.TweepyException as e:
+            import ipdb; ipdb.set_trace()
+            pass
 
         self.tweeted = True
 
 
-def get_twitter_instance():
-    """Return an authenticated twitter instance."""
+def get_twitter_client():
+    """Return an authenticated Twitter client using the v2 API."""
     app_key = config['twitter']['api_key']
     app_secret = config['twitter']['api_secret']
     oauth_token = config['twitter']['oauth_token']
     oauth_token_secret = config['twitter']['oauth_secret']
 
-    return Twython(app_key, app_secret, oauth_token, oauth_token_secret)
+    return tweepy.Client(
+        consumer_key=app_key,
+        consumer_secret=app_secret,
+        access_token=oauth_token,
+        access_token_secret=oauth_token_secret
+    )
+
+
+def get_twitter_client_v1():
+    """
+    Return an authenticated Twitter client using the v1 API.
+    
+    As of 2023-07-06 uploading media still requires the v1 API.
+    """
+    app_key = config['twitter']['api_key']
+    app_secret = config['twitter']['api_secret']
+    oauth_token = config['twitter']['oauth_token']
+    oauth_token_secret = config['twitter']['oauth_secret']
+
+    tweepy_auth = tweepy.OAuth1UserHandler(app_key, app_secret, oauth_token, oauth_token_secret)
+
+    return tweepy.API(tweepy_auth)
+
+def upload_twitter_images(img_files: Iterable[IO]) -> List[tweepy.models.Media]:
+    """Upload images to Twitter and return their IDs."""
+    twitter = get_twitter_client_v1()
+
+    media = []
+
+    for img in img_files:
+        try:
+            res = twitter.media_upload(filename='image', file=img)
+            media.append(res)
+        except tweepy.errors.TweepyException as e:
+            pass
+
+    return media
 
 def get_textsize(graf, width, fnt, spacing):
     """Take text and additional parameters and return the rendered size."""
@@ -220,20 +260,13 @@ def config_twitter(config):
 
     input("Now ensure you are logged in with the account that will do the posting. ")
 
-    tw = Twython(api_key, api_secret)
-    auth = tw.get_authentication_tokens()
+    tw = tweepy.OAuth1UserHandler(api_key, api_secret, callback='oob')
 
-    oauth_token = auth['oauth_token']
-    oauth_secret = auth['oauth_token_secret']
+    auth_url = tw.get_authorization_url()
 
-    tw = Twython(api_key, api_secret, oauth_token, oauth_secret)
+    pin = input("Enter the pin found at {} ".format(auth_url))
 
-    pin = input("Enter the pin found at {} ".format(auth['auth_url']))
-
-    final_step = tw.get_authorized_tokens(pin)
-
-    oauth_token = final_step['oauth_token']
-    oauth_secret = final_step['oauth_token_secret']
+    oauth_token, oauth_secret = tw.get_access_token(pin)
 
     twitter = {'api_key': api_key, 'api_secret': api_secret,
             'oauth_token': oauth_token, 'oauth_secret': oauth_secret}
@@ -304,7 +337,7 @@ def initial_setup():
         to_configure = input("It looks like this is the first time you've run trackthenews, or you've moved or deleted its configuration files.\nWould you like to create a new configuration in {}? (Y/n) ".format(home))
 
         config = {}
-    
+
         if to_configure.lower() in ['n','no','q','exit','quit']:
             sys.exit("Ok, quitting the program without configuring.")
 

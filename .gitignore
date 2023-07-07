@@ -4,3 +4,4 @@ matchwords.txt
 __pycache__/*
 *.db
 ttnconfig/*
+*.egg-info

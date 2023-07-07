@@ -230,16 +230,18 @@ def upload_twitter_images(img_files: Iterable[IO]) -> List[tweepy.models.Media]:
     return media
 
 
-def get_textsize(graf, width, fnt, spacing):
-    """Take text and additional parameters and return the rendered size."""
-    wrapped_graf = textwrap.wrap(graf, width)
+def get_textsize(wrapped_graf, fnt, spacing):
+    """Take wrapped text and additional parameters and return the expected rendered size."""
+    im = Image.new(mode="RGB", size=(0, 0))
+    draw = ImageDraw.Draw(im)
 
-    line_spacing = fnt.getsize("A")[1] + spacing
-    text_width = max(fnt.getsize(line)[0] for line in wrapped_graf)
-
-    textsize = text_width, line_spacing * len(wrapped_graf)
-
-    return textsize
+    # Letters like "y" excend beyond the bounding box, so we add the descender to the total height
+    _, descent = fnt.getmetrics()
+    left, top, right, bottom = draw.multiline_textbbox(
+        (0, 0), wrapped_graf, font=fnt, spacing=spacing
+    )
+    width, height = right - left, bottom - top
+    return width, height + descent
 
 
 def render_img(graf, width=60, square=False):
@@ -252,13 +254,19 @@ def render_img(graf, width=60, square=False):
 
     graf = graf.lstrip("#>—-• ")
 
-    if square is True:
-        ts = {w: get_textsize(graf, w, fnt, spacing) for w in range(20, width)}
-        width = min(ts, key=lambda w: abs(ts.get(w)[1] - ts.get(w)[0]))
+    # When there are multiple images, we try to render them in dimensions as close
+    # to a square as possible, so they look good in a gallery view. To do this, we
+    # estimate the dimensions at different character widths, and pick the character
+    # width that has the smallest difference between pixel width and pixel height.
+    if square:
+        ts = {
+            w: get_textsize("\n".join(textwrap.wrap(graf, w)), fnt, spacing)
+            for w in range(20, width)
+        }
+        width = min(ts, key=lambda w: abs(ts[w][1] - ts[w][0]))
 
-    textsize = get_textsize(graf, width, fnt, spacing)
     wrapped = "\n".join(textwrap.wrap(graf, width))
-
+    textsize = get_textsize(wrapped, fnt, spacing)
     border = 60
 
     size = tuple(side + border * 2 for side in textsize)
@@ -266,7 +274,7 @@ def render_img(graf, width=60, square=False):
 
     im = Image.new("RGB", size, color=config["color"])
     draw_obj = ImageDraw.Draw(im)
-    draw_obj.multiline_text(xy, wrapped, fill="#000000", font=fnt, spacing=12)
+    draw_obj.multiline_text(xy, wrapped, fill="#000000", font=fnt, spacing=spacing)
 
     return im
 

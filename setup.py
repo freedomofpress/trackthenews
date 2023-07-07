@@ -28,6 +28,6 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6'],
+        'Programming Language :: Python :: 3.9'],
     packages=find_packages(exclude=('ttnconfig',))
 )

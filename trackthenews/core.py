@@ -24,7 +24,6 @@ import html2text
 import requests
 import yaml
 
-from bs4 import BeautifulSoup
 from PIL import Image, ImageDraw, ImageFont
 from readability import Document
 import tweepy

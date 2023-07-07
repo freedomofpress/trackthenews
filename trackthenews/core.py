@@ -113,6 +113,13 @@ class Article:
         title = (self.title[:remaining_chars] + '…') if len(self.title) > remaining_chars else self.title
         return title
 
+    def truncate_alt_text(self, text, max_chars=1500):
+        """Truncates the alt text to fit within the character limit."""
+        alt_text = "Excerpt: " + text
+        remaining_chars = max_chars - 3  # 3 chars for the ellipsis
+        alt_text = (alt_text[:remaining_chars] + '…') if len(alt_text) > max_chars else alt_text
+        return alt_text
+
     def tweet(self):
         """Send images to be rendered and tweet them with a text status."""
         if 'twitter' not in config:
@@ -153,9 +160,10 @@ class Article:
         mastodon = get_mastodon_instance()
         media_ids = []
 
-        for img_file in img_files:
+        for idx, img_file in enumerate(img_files):
             try:
-                res = mastodon.media_post(img_file, mime_type='image/jpeg')
+                alt_text = self.truncate_alt_text(self.matching_grafs[idx])
+                res = mastodon.media_post(img_file, mime_type='image/jpeg', description=alt_text)
                 media_ids.append(res['id'])
             except MastodonError:
                 pass

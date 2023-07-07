@@ -98,13 +98,10 @@ class Article:
 
         img_files = []
         for img in self.imgs:
-            try:
-                img_io = BytesIO()
-                img.save(img_io, format='jpeg', quality=95)
-                img_io.seek(0)
-                img_files.append(img_io)
-            except tweepy.errors.TweepyException:
-                pass
+            img_io = BytesIO()
+            img.save(img_io, format='jpeg', quality=95)
+            img_io.seek(0)
+            img_files.append(img_io)
 
         media = upload_twitter_images(img_files)
         media_ids = [m.media_id for m in media]

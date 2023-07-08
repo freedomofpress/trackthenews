@@ -47,6 +47,7 @@ class Article:
         self.matching_grafs = []
         self.imgs = []
         self.tweeted = False
+        self.tooted = False
 
     def canonicalize_url(self):
         """Process article URL to produce something roughly canonical."""
@@ -376,6 +377,7 @@ def setup_db(config):
             outlet      text,
             url         text,
             tweeted     boolean,
+            tooted      boolean,
             recorded_at datetime
         );"""
         conn.executescript(schema_script)
@@ -473,6 +475,17 @@ def initial_setup():
     return config
 
 
+def apply_migrations(conn):
+    # Check if the "tooted" column exists
+    cursor = conn.execute("PRAGMA table_info(articles)")
+    columns = [column[1] for column in cursor.fetchall()]
+    if 'tooted' not in columns:
+        # If the "tooted" column does not exist, add it
+        print("Adding missing 'tooted' column")
+        conn.execute("ALTER TABLE articles ADD COLUMN tooted boolean")
+        conn.commit()
+
+
 def main():
     parser = argparse.ArgumentParser(description="Track articles from RSS feeds for a custom list of keywords and act on the matches.")
 
@@ -509,6 +522,8 @@ def main():
         setup_db(config)
 
     conn = sqlite3.connect(database)
+
+    apply_migrations(conn)
 
     matchlist = os.path.join(home, 'matchlist.txt')
     matchlist_case_sensitive = os.path.join(home, 'matchlist_case_sensitive.txt')
@@ -586,10 +601,10 @@ def main():
                 article.toot()
 
             conn.execute("""insert into articles(
-                         title, outlet, url, tweeted,recorded_at)
-                         values (?, ?, ?, ?, ?)""",
+                         title, outlet, url, tweeted, tooted, recorded_at)
+                         values (?, ?, ?, ?, ?, ?)""",
                          (article.title, article.outlet, article.url,
-                          article.tweeted, datetime.utcnow()))
+                          article.tweeted, article.tooted, datetime.utcnow()))
 
             conn.commit()
 

@@ -45,7 +45,6 @@ class Article:
         self.canonicalize_url()
 
         self.matching_grafs = []
-        self.imgs = []
         self.tweeted = False
         self.tooted = False
 
@@ -95,9 +94,7 @@ class Article:
         """Prepares the images for upload."""
         img_files = []
         for graf in self.matching_grafs[:4]:
-            self.imgs.append(render_img(graf, square=square))
-
-        for img in self.imgs:
+            img = render_img(graf, square=square)
             img_io = BytesIO()
             img.save(img_io, format='jpeg', quality=95)
             img_io.seek(0)
@@ -317,25 +314,33 @@ def config_twitter(config):
         if replace.lower() in ['n','no']:
             return config
 
-    input("Create a new Twitter app at https://developer.twitter.com/en/portal/projects-and-apps to post matching stories. For this step, you can be logged in as yourself or with the posting account, if they're different. Fill out Name, Description, and Website with values meaningful to you. These are not used in trackthenews config but may be publicly visible. Then click the \"Keys and Access Tokens\" tab. ")
+    input(
+    "Create a new Twitter app at https://developer.twitter.com/en/portal/projects-and-apps\n"
+    "to post matching stories. For this step, you can be logged in as yourself or with the\n"
+    "posting account, if they're different. Fill out Name, Description, and Website with\n"
+    "values meaningful to you. These are not used in trackthenews config but may be\n"
+    'publicly visible. Then click the "Keys and Access Tokens" tab.\n\n'
+    "Press [Enter] to continue…"
+    )
 
-    api_key = input("Enter the provided API key: ")
-    api_secret = input("Enter the provided API secret: ")
+    api_key = input("Enter the provided API key: ").strip()
+    api_secret = input("Enter the provided API secret: ").strip()
 
-    input("Now ensure you are logged in with the account that will do the posting. ")
+    input("Now ensure you are logged in with the account that will do the posting.\n\n"
+          "Press [Enter] to continue…")
 
     tw = tweepy.OAuth1UserHandler(api_key, api_secret, callback='oob')
 
     auth_url = tw.get_authorization_url()
 
-    pin = input("Enter the pin found at {} ".format(auth_url))
+    pin = input("Enter the pin found at {} ".format(auth_url)).strip()
 
     oauth_token, oauth_secret = tw.get_access_token(pin)
 
     twitter = {'api_key': api_key, 'api_secret': api_secret,
             'oauth_token': oauth_token, 'oauth_secret': oauth_secret}
 
-    config['twitter'] = twitter 
+    config['twitter'] = twitter
 
     return config
 
@@ -350,8 +355,16 @@ def config_mastodon(config):
         if replace.lower() in ['n','no']:
             return config
 
-    api_base_url = input("Enter your Mastodon instance URL (e.g., 'https://mastodon.social'): ")
-    access_token = input("Enter your access token: ")
+    input(
+    "To configure Mastodon, you will need your instance URL and an access token. To\n"
+    "obtain an access token, visit the developer settings (under\n"
+    "/settings/applications), and create an application with read and write\n"
+    "permissions.\n\n"
+    "Press [Enter] to continue…"
+    )
+
+    api_base_url = input("Enter your Mastodon instance URL (e.g., 'https://mastodon.social'): ").strip()
+    access_token = input("Enter your access token: ").strip()
 
     # Verify the credentials by making a request to the API
     mastodon_client = Mastodon(
@@ -454,7 +467,7 @@ def initial_setup():
         config['db'] = 'trackthenews.db'
 
     if 'user-agent' not in config:
-        ua = input("What would you like your script's user-agent to be? This should be something that is meaningful to you and may show up in the logs of the sites you are tracking. ")
+        ua = input("What would you like your script's user-agent to be?\nThis should be something that is meaningful to you and may show up in the logs of the sites you are tracking: ")
 
         ua = ua + " / powered by trackthenews (a project of freedom.press)"
 

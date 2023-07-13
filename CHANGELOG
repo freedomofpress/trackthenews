@@ -1,0 +1,12 @@
+Changes
+=======
+
+0.2
+---
+
+* [Added] Support for posting to Mastodon.
+
+0.1.11
+------
+
+* [Fixed] Unbroke Twitter support by switching to using the v2 API for posting Tweets. The v1 API was largely discontinued. You will need to ensure your API creds are valid for the Twitter v2 API or provision new ones.

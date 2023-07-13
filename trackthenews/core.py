@@ -145,13 +145,8 @@ class Article:
         content = "{}{} {}".format(source, title, self.url)
 
         twitter = get_twitter_client()
-        try:
-            twitter.create_tweet(text=content, media_ids=media_ids)
-        except tweepy.errors.TweepyException as e:
-            import ipdb
 
-            ipdb.set_trace()
-            pass
+        twitter.create_tweet(text=content, media_ids=media_ids)
 
         self.tweeted = True
 

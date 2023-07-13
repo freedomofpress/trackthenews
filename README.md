@@ -4,7 +4,7 @@
 
 If you want to run your own instance of `trackthenews`, you can download and install the package, and run its built-in configuration process. It can be installed with `pip`:
 
-Python 3.6 is recommend, but if you run [into troubles](https://github.com/freedomofpress/trackthenews/issues/1), you may want to try it with Python 2.7.
+Python 3.9 is what we currently test against, though it may work with other versions.
 
 
 ```bash

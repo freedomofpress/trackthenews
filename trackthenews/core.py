@@ -4,29 +4,26 @@
 
 from __future__ import unicode_literals
 
-from typing import IO, Iterable, List
-
 import argparse
 import json
 import os
 import sqlite3
-import time
-import textwrap
 import sys
-
+import textwrap
+import time
+from builtins import input
 from datetime import datetime
 from io import BytesIO, open
-from builtins import input
+from typing import IO, Iterable, List
 
 import feedparser
 import html2text
 import requests
+import tweepy
 import yaml
-
+from mastodon import Mastodon, MastodonError, MastodonNetworkError
 from PIL import Image, ImageDraw, ImageFont
 from readability import Document
-from mastodon import Mastodon, MastodonNetworkError, MastodonError
-import tweepy
 
 # TODO: add/remove RSS feeds from within the script.
 # Currently the matchwords list and RSS feeds list must be edited separately.
@@ -118,11 +115,7 @@ class Article:
         """Truncates the alt text to fit within the character limit."""
         alt_text = "Excerpt: " + text
         remaining_chars = max_chars - 3  # 3 chars for the ellipsis
-        alt_text = (
-            (alt_text[:remaining_chars] + "…")
-            if len(alt_text) > max_chars
-            else alt_text
-        )
+        alt_text = (alt_text[:remaining_chars] + "…") if len(alt_text) > max_chars else alt_text
         return alt_text
 
     def tweet(self):
@@ -165,9 +158,7 @@ class Article:
         for idx, img_file in enumerate(img_files):
             try:
                 alt_text = self.truncate_alt_text(self.matching_grafs[idx])
-                res = mastodon.media_post(
-                    img_file, mime_type="image/jpeg", description=alt_text
-                )
+                res = mastodon.media_post(img_file, mime_type="image/jpeg", description=alt_text)
                 media_ids.append(res["id"])
             except MastodonError:
                 pass
@@ -218,9 +209,7 @@ def get_twitter_client_v1():
     oauth_token = config["twitter"]["oauth_token"]
     oauth_token_secret = config["twitter"]["oauth_secret"]
 
-    tweepy_auth = tweepy.OAuth1UserHandler(
-        app_key, app_secret, oauth_token, oauth_token_secret
-    )
+    tweepy_auth = tweepy.OAuth1UserHandler(app_key, app_secret, oauth_token, oauth_token_secret)
 
     return tweepy.API(tweepy_auth)
 
@@ -235,7 +224,7 @@ def upload_twitter_images(img_files: Iterable[IO]) -> List[tweepy.models.Media]:
         try:
             res = twitter.media_upload(filename="image", file=img)
             media.append(res)
-        except tweepy.errors.TweepyException as e:
+        except tweepy.errors.TweepyException:
             pass
 
     return media
@@ -311,7 +300,6 @@ def parse_feed(outlet, url, delicate, redirects):
 
 
 def config_twitter(config):
-
     twitter_setup = input("Would you like the bot to post to Twitter? (Y/n) ")
     if twitter_setup.lower().startswith("n"):
         return config
@@ -425,24 +413,20 @@ def setup_matchlist():
         with open(path, "w") as f:
             f.write("")
         print(
-            "A new matchlist has been generated at {path}. You can add case insensitive entries to match, one per line.".format(
-                **locals()
-            )
+            "A new matchlist has been generated at {path}."
+            " You can add case insensitive entries to match, one per line.".format(**locals())
         )
 
     if os.path.isfile(path_case_sensitive):
         print(
-            "A case-sensitive matchlist already exists at {path_case_sensitive}.".format(
-                **locals()
-            )
+            "A case-sensitive matchlist already exists at {path_case_sensitive}.".format(**locals())
         )
     else:
         with open(path_case_sensitive, "w") as f:
             f.write("")
         print(
-            "A new case-sensitive matchlist has been generated at {path_case_sensitive}. You can add case-sensitive entries to match, one per line.".format(
-                **locals()
-            )
+            "A new case-sensitive matchlist has been generated at {path_case_sensitive}."
+            " You can add case-sensitive entries to match, one per line.".format(**locals())
         )
 
     return
@@ -457,9 +441,7 @@ def setup_rssfeedsfile():
     else:
         with open(path, "w") as f:
             f.write("")
-            print(
-                "A new RSS feeds file has been generated at {path}.".format(**locals())
-            )
+            print("A new RSS feeds file has been generated at {path}.".format(**locals()))
 
     return
 
@@ -472,9 +454,9 @@ def initial_setup():
             config = yaml.full_load(f)
     else:
         to_configure = input(
-            "It looks like this is the first time you've run trackthenews, or you've moved or deleted its configuration files.\nWould you like to create a new configuration in {}? (Y/n) ".format(
-                home
-            )
+            "It looks like this is the first time you've run trackthenews,"
+            " or you've moved or deleted its configuration files.\n"
+            "Would you like to create a new configuration in {}? (Y/n) ".format(home)
         )
 
         config = {}
@@ -487,7 +469,7 @@ def initial_setup():
     else:
         try:
             os.makedirs(home)
-        except:
+        except Exception:
             pass
 
     if "db" not in config:
@@ -495,7 +477,9 @@ def initial_setup():
 
     if "user-agent" not in config:
         ua = input(
-            "What would you like your script's user-agent to be?\nThis should be something that is meaningful to you and may show up in the logs of the sites you are tracking: "
+            "What would you like your script's user-agent to be?\n"
+            "This should be something that is meaningful to you and"
+            " may show up in the logs of the sites you are tracking: "
         )
 
         ua = ua + " / powered by trackthenews (a project of freedom.press)"
@@ -516,9 +500,7 @@ def initial_setup():
 
     # check if either Twitter or Mastodon has been configured
     if "twitter" not in config and "mastodon" not in config:
-        print(
-            "Error: The bot must have at least one of Twitter or Mastodon configured."
-        )
+        print("Error: The bot must have at least one of Twitter or Mastodon configured.")
         sys.exit(1)
 
     with open(configfile, "w") as f:
@@ -540,12 +522,11 @@ def apply_migrations(conn):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Track articles from RSS feeds for a custom list of keywords and act on the matches."
+        description="Track articles from RSS feeds for a custom list of keywords"
+        " and act on the matches."
     )
 
-    parser.add_argument(
-        "-c", "--config", help="Run configuration process", action="store_true"
-    )
+    parser.add_argument("-c", "--config", help="Run configuration process", action="store_true")
     parser.add_argument(
         "dir",
         nargs="?",
@@ -563,7 +544,8 @@ def main():
     if args.config:
         initial_setup()
         sys.exit(
-            "Created new configuration files. Now go populate the RSS Feed file and the list of matchwords!"
+            "Created new configuration files."
+            " Now go populate the RSS Feed file and the list of matchwords!"
         )
 
     configfile = os.path.join(home, "config.yaml")
@@ -599,9 +581,8 @@ def main():
 
     if not (matchwords or matchwords_case_sensitive):
         sys.exit(
-            "You must add words to at least one of the matchwords lists, located at {} and {}.".format(
-                matchlist, matchlist_case_sensitive
-            )
+            "You must add words to at least one of the matchwords lists,"
+            " located at {} and {}.".format(matchlist, matchlist_case_sensitive)
         )
 
     sys.path.append(home)
@@ -634,9 +615,7 @@ def main():
             rss_feeds = json.load(f)
         except json.JSONDecodeError:
             sys.exit(
-                "You must add RSS feeds to the RSS feeds list, located at {}.".format(
-                    rssfeedsfile
-                )
+                "You must add RSS feeds to the RSS feeds list, located at {}.".format(rssfeedsfile)
             )
 
     for feed in rss_feeds:
@@ -656,15 +635,11 @@ def main():
                 deduped.append(article)
 
         for counter, article in enumerate(deduped, 1):
-            print(
-                "Checking {} article {}/{}".format(
-                    article.outlet, counter, len(deduped)
-                )
-            )
+            print("Checking {} article {}/{}".format(article.outlet, counter, len(deduped)))
 
             try:
                 article.check_for_matches()
-            except:
+            except Exception:
                 print("Having trouble with that article. Skipping for now.")
                 pass
 

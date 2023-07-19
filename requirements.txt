@@ -7,3 +7,6 @@ readability-lxml==0.8.1
 requests==2.31.0
 tweepy==4.14.0
 Mastodon.py==1.8.1
+black==23.7.0
+flake8==6.0.0
+isort==5.12.0

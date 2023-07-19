@@ -1,7 +1,7 @@
 feedparser==6.0.10
 future==0.17.1
 html2text==2018.1.9
-Pillow==8.4
+Pillow==9.3.0
 pyaml==18.11.0
 readability-lxml==0.8.1
 requests==2.31.0

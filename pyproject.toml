@@ -1,3 +1,41 @@
 [tool.black]
 line-length = 100
 target-version = ['py39']
+
+[tool.poetry]
+name = "trackthenews"
+version = "0.2"
+description = "Monitor RSS feeds for keywords and act on matching results. A special project of the Freedom of the Press Foundation."
+authors = ["Freedom of the Press Foundation <info@freedom.press>"]
+maintainers = [
+    "Harris Lapiroff <harris@freedom.press>",
+    "Erik Moeller <erik@freedom.press>",
+]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/freedomofpress/trackthenews"
+include = ["trackthenews/fonts/*"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+feedparser = "^6.0"
+future = "^0.17.1"
+html2text = "2018.1.9"
+Pillow = "^8.4"
+pyaml = "^18.11.0"
+readability-lxml = "^0.8.1"
+requests = "^2.31.0"
+tweepy = "^4.14.0"
+"Mastodon.py" = "^1.8.1"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.7.0"
+flake8 = "^6.0.0"
+isort = "^5.12.0"
+
+[tool.poetry.scripts]
+trackthenews = 'trackthenews:main'
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

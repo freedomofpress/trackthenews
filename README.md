@@ -62,6 +62,49 @@ All articles are recorded in a sqlite database.
 
 In some cases, you may wish to suppress articles from being posted, even though they would otherwise match. You can do so by writing a new function, `check`, and placing it in a file named `blocklist.py` in the configuration directory. `check` takes an Article (and so has access to its `outlet`, `title`, and `url`) and should return `true` for any article that should be skipped.
 
+## Development
+
+### Quick Start
+
+```bash
+poetry install
+poetry run trackthenews sample_project
+# Follow the setup script instructions
+cat sample_project/matchlist-sample.txt > sample_project/matchlist.txt
+cat sample_project/rssfeeds-sample.json > sample_project/rssfeeds.json
+poetry run trackthenews sample_project
+```
+
+### Detailed Instructions
+
+To develop `trackthenews`, clone the repository and install the package using [poetry][] and run the CLI tool:
+
+```bash
+# This will create a virtual environment and install trackthenews and its dependencies
+poetry install
+# This will run the setup script
+poetry run trackthenews sample_project
+```
+
+On first run this will take you through the interactive setup process. Follow the instructions. You will need a Twitter account with application keys and/or a Mastodon account.
+
+When the setup process is complete, the configuration for your bot will live in the `sample_project` directory. Fill out the `matchlist.txt`, `matchlist_case_sensitive.txt`, and `rssfeeds.json` files or copy configuration from the provided samples:
+
+```bash
+cat sample_project/matchlist-sample.txt > sample_project/matchlist.txt
+cat sample_project/rssfeeds-sample.json > sample_project/rssfeeds.json
+```
+
+`matchlist_case_sensitive.txt` is optional and we don't provide a sample.
+
+Now run the bot:
+
+```bash
+poetry run trackthenews sample_project
+```
+
+[poetry]: https://python-poetry.org/
+
 ## License
 
 MIT.

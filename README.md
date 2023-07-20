@@ -81,7 +81,7 @@ To develop `trackthenews`, clone the repository and install the package using [p
 
 ```bash
 # This will create a virtual environment and install trackthenews and its dependencies
-poetry install
+poetry install --with=dev
 # This will run the setup script
 poetry run trackthenews sample_project
 ```

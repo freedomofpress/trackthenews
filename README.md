@@ -105,6 +105,31 @@ poetry run trackthenews sample_project
 
 [poetry]: https://python-poetry.org/
 
+### Linters
+
+We check that all code conforms to [black][], [flake8][], and [isort][]. To run these checks locally:
+
+```bash
+poetry run black --check .  # To automatically fix issues, exclude --check flag
+poetry run flake8
+poetry run isort --check-only --diff .  # To automatically fix issues, exclude --check-only and --diff flag
+```
+
+We also provide the following makefile shortcuts to run these commands:
+
+```bash
+make black
+make flake8
+make isort
+make black-fix  # Automatically fix issues
+make isort-fix  # Automatically fix issues
+make all        # Run all three checks (check only, no fixes)
+```
+
+[black]: https://black.readthedocs.io/en/stable/
+[flake8]: https://flake8.pycqa.org/en/latest/
+[isort]: https://pycqa.github.io/isort/
+
 ## License
 
 MIT.

@@ -5,23 +5,23 @@ DIR = .
 
 flake8:
 	@echo "Running Flake8"
-	@flake8 $(DIR)
+	@poetry run flake8 $(DIR)
 
 isort:
 	@echo "Running isort"
-	@isort --check --diff $(DIR)
+	@poetry run isort --check --diff $(DIR)
 
 isort-fix:
 	@echo "Running isort (fix)"
-	@isort $(DIR)
+	@poetry run isort $(DIR)
 
 black:
 	@echo "Running Black"
-	@black --check $(DIR)
+	@poetry run black --check $(DIR)
 
 black-fix:
 	@echo "Running Black (fix)"
-	@black $(DIR)
+	@poetry run black $(DIR)
 
 lint-all: flake8 isort black
 	@echo "Linting complete"

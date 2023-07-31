@@ -6,10 +6,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Install dependencies
-        run: |
-          apt-get update && apt-get install --yes --no-install-recommends make python3-pip
-          pip install black==23.7.0 flake8==6.0.0 isort==5.12.0
-      - name: Run lint
-        run: |
-          make lint-all
+      - name: Install Poetry
+        run: curl -sSL https://install.python-poetry.org | python3 -
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9' 
+          cache: 'poetry'
+      - name: Install Python dependencies
+        run: poetry install --with=dev
+      - name: Run Flake8
+        run: poetry run flake8 .
+      - name: Run Black
+        run: poetry run black --check .
+      - name: Run isort
+        run: poetry run isort --check --diff .

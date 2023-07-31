@@ -1,7 +1,9 @@
-config.yaml
-rssfeeds.json
-matchwords.txt
 __pycache__/*
 *.db
 ttnconfig/*
 *.egg-info
+sample_project/rssfeeds.json
+sample_project/matchlist.txt
+sample_project/matchlist_case_sensitive.txt
+sample_project/config.yaml
+sample_project/blocklist.py

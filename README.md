@@ -67,6 +67,7 @@ In some cases, you may wish to suppress articles from being posted, even though 
 ### Quick Start
 
 ```bash
+poetry env use 3.9  # Necessary if you have a different default python version
 poetry install
 poetry run trackthenews sample_project
 # Follow the setup script instructions
@@ -80,6 +81,8 @@ poetry run trackthenews sample_project
 To develop `trackthenews`, clone the repository and install the package using [poetry][] and run the CLI tool:
 
 ```bash
+# Ensure you're using Python 3.9
+poetry env use 3.9
 # This will create a virtual environment and install trackthenews and its dependencies
 poetry install --with=dev
 # This will run the setup script

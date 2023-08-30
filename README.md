@@ -47,7 +47,7 @@ If you designated a custom installation directory, or if you're running it from 
 trackthenews ~/foo/bar/path
 ```
 
-Settings, such as the background color for new posts, the font, and the user-agent, are all located in `config.yaml`, in the designated configuration directory. 
+Settings, such as the background color for new posts, the font, and the user-agent, are all located in `config.yaml`, in the designated configuration directory.
 
 ## How it works
 

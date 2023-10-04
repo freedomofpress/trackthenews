@@ -32,6 +32,9 @@ from readability import Document
 # TODO: add other forms of output beyond a Twitter bot
 
 
+HTTP_TIMEOUT_SECONDS = 30
+
+
 class Article:
     def __init__(self, outlet, title, url, delicate=False, redirects=False):
         self.outlet = outlet
@@ -39,18 +42,17 @@ class Article:
         self.url = url
         self.delicate = delicate
         self.redirects = redirects
-        self.canonicalize_url()
 
         self.matching_grafs = []
         self.tweeted = False
         self.tooted = False
 
-    def canonicalize_url(self):
+    def canonicalize_url(self, http_session):
         """Process article URL to produce something roughly canonical."""
         # These outlets use redirect links in their RSS feeds.
         # Follow those links, then store only the final destination.
         if self.redirects:
-            res = requests.head(self.url, allow_redirects=True, timeout=30)
+            res = http_session.head(self.url, allow_redirects=True, timeout=30)
             self.url = res.headers["location"] if "location" in res.headers else res.url
 
         # Some outlets' URLs don't play well with modifications, so those we
@@ -58,9 +60,10 @@ class Article:
         if not self.delicate:
             self.url = decruft_url(self.url)
 
-    def clean(self):
+    def clean(self, http_session):
         """Download the article and strip it of HTML formatting."""
-        self.res = requests.get(self.url, headers={"User-Agent": ua}, timeout=30)
+        self.res = http_session.get(self.url, timeout=HTTP_TIMEOUT_SECONDS)
+        self.res.raise_for_status()
         doc = Document(self.res.text)
 
         h = html2text.HTML2Text()
@@ -71,11 +74,11 @@ class Article:
 
         self.plaintext = h.handle(doc.summary())
 
-    def check_for_matches(self):
+    def check_for_matches(self, http_session):
         """
         Clean up an article, check it against a block list, then for matches.
         """
-        self.clean()
+        self.clean(http_session)
         plaintext_grafs = self.plaintext.split("\n")
 
         if blocklist_loaded and blocklist.check(self):
@@ -285,9 +288,11 @@ def decruft_url(url):
     return url
 
 
-def parse_feed(outlet, url, delicate, redirects):
+def parse_feed(outlet, url, delicate, redirects, http_session):
     """Take the URL of an RSS feed and return a list of Article objects."""
-    feed = feedparser.parse(url)
+    response = http_session.get(url, timeout=HTTP_TIMEOUT_SECONDS)
+    response.raise_for_status()
+    feed = feedparser.parse(response.text)
 
     articles = []
 
@@ -301,6 +306,7 @@ def parse_feed(outlet, url, delicate, redirects):
             continue
 
         article = Article(outlet, title, url, delicate, redirects)
+        article.canonicalize_url(http_session)
 
         articles.append(article)
 
@@ -626,53 +632,60 @@ def main():
                 "You must add RSS feeds to the RSS feeds list, located at {}.".format(rssfeedsfile)
             )
 
-    for feed in rss_feeds:
-        outlet = feed["outlet"] if "outlet" in feed else ""
-        url = feed["url"]
-        delicate = True if "delicateURLs" in feed and feed["delicateURLs"] else False
-        redirects = True if "redirectLinks" in feed and feed["redirectLinks"] else False
-
-        articles = parse_feed(outlet, url, delicate, redirects)
-        deduped = []
-
-        for article in articles:
-            article_exists = conn.execute(
-                "select * from articles where url = ?", (article.url,)
-            ).fetchall()
-            if not article_exists:
-                deduped.append(article)
-
-        for counter, article in enumerate(deduped, 1):
-            print("Checking {} article {}/{}".format(article.outlet, counter, len(deduped)))
+    with requests.Session() as http_session:
+        http_session.headers.update({"User-Agent": ua})
+        for feed in rss_feeds:
+            outlet = feed["outlet"] if "outlet" in feed else ""
+            url = feed["url"]
+            delicate = True if "delicateURLs" in feed and feed["delicateURLs"] else False
+            redirects = True if "redirectLinks" in feed and feed["redirectLinks"] else False
 
             try:
-                article.check_for_matches()
-            except Exception:
-                print("Having trouble with that article. Skipping for now.")
-                pass
+                articles = parse_feed(outlet, url, delicate, redirects, http_session)
+            except requests.HTTPError as e:
+                print(f"Unable to fetch feed: {e}. Skipping for now.")
+                continue
+            deduped = []
 
-            if article.matching_grafs:
-                print("Got one!")
-                article.tweet()
-                article.toot()
+            for article in articles:
+                article_exists = conn.execute(
+                    "select * from articles where url = ?", (article.url,)
+                ).fetchall()
+                if not article_exists:
+                    deduped.append(article)
 
-            conn.execute(
-                """insert into articles(
-                         title, outlet, url, tweeted, tooted, recorded_at)
-                         values (?, ?, ?, ?, ?, ?)""",
-                (
-                    article.title,
-                    article.outlet,
-                    article.url,
-                    article.tweeted,
-                    article.tooted,
-                    datetime.utcnow(),
-                ),
-            )
+            for counter, article in enumerate(deduped, 1):
+                print("Checking {} article {}/{}".format(article.outlet, counter, len(deduped)))
 
-            conn.commit()
+                try:
+                    article.check_for_matches(http_session)
+                except Exception as e:
+                    print(e)
+                    print("Having trouble with that article. Skipping for now.")
+                    pass
 
-            time.sleep(1)
+                if article.matching_grafs:
+                    print("Got one!")
+                    article.tweet()
+                    article.toot()
+
+                conn.execute(
+                    """insert into articles(
+                             title, outlet, url, tweeted, tooted, recorded_at)
+                             values (?, ?, ?, ?, ?, ?)""",
+                    (
+                        article.title,
+                        article.outlet,
+                        article.url,
+                        article.tweeted,
+                        article.tooted,
+                        datetime.utcnow(),
+                    ),
+                )
+
+                conn.commit()
+
+                time.sleep(1)
 
     conn.close()
 

@@ -81,13 +81,15 @@ class Article:
         self.clean(http_session)
         plaintext_grafs = self.plaintext.split("\n")
 
-        if blocklist_loaded and blocklist.check(self):
+        if blocklist_loaded and blocklist.check_article(self):
             pass
         else:
             for graf in plaintext_grafs:
                 if any(word.lower() in graf.lower() for word in matchwords) or any(
                     word in graf for word in matchwords_case_sensitive
                 ):
+                    if blocklist_loaded and blocklist.check_paragraph(self, graf):
+                        continue
                     self.matching_grafs.append(graf)
 
     def prepare_images(self, square):

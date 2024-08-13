@@ -1,6 +1,15 @@
 Changes
 =======
 
+0.3
+---
+
+* [Added] Expanded blocklist functionality to support blocking based on skipping a particular paragraph when checking or skipping an entire article using a `check_article` or `check_paragraph` function.
+* [Removed] Old blocklist format using a `check` function. **This is a breaking change for any projects that are using this blocklist format.**
+* [Performance] Improved HTTP session management when requesting feeds.
+* [Other] Added linters (flake8, black, isort) and updated code to satisfy them.
+* [Other] Switched to Poetry for dependency management.
+
 0.2
 ---
 

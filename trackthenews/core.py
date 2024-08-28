@@ -604,14 +604,24 @@ def main():
     sys.path.append(home)
     global blocklist_loaded
     global blocklist
-    try:
-        import blocklist as blocklist
 
-        blocklist_loaded = True
-        print("Loaded blocklist.")
-    except ImportError:
+    blocklist_path = os.path.join(home, "blocklist.py")
+
+    if os.path.exists(blocklist_path):
+        try:
+            import blocklist as blocklist
+
+            blocklist_loaded = True
+            print("Loaded blocklist.")
+        except ImportError as e:
+            blocklist_loaded = False
+            print(f"Error loading blocklist: {e}")
+        except Exception as e:
+            blocklist_loaded = False
+            print(f"Unexpected error loading blocklist: {e}")
+    else:
         blocklist_loaded = False
-        print("No blocklist to load.")
+        print("No blocklist file found to load.")
 
     if matchwords:
         print("Matching against the following words: {}".format(matchwords))

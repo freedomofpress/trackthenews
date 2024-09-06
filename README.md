@@ -60,9 +60,7 @@ All articles are recorded in a sqlite database.
 
 ### Advanced feature: blocklist
 
-In some cases, you may wish to suppress articles from being posted, even though they would otherwise match. You can do so by writing two new functions, `check_article` and `check_paragraph`, and placing them in a file named `blocklist.py` in the configuration directory:
-- `check_article` takes an Article (and so has access to its `outlet`, `title`, and `url`) and should return `True` for any article that should be skipped in its entirety.
-- `check_paragraph` takes an Article and an individual matching paragraph and should return `True` for any paragraph that should be skipped (if other paragraphs match, the article will still be posted, but without the skipped paragraphs).
+In some cases, you may wish to suppress articles or paragraphs from being posted, even though they would otherwise match. To do so, implement a CustomBlocklist class following the abstract base class template in `trackthenews/base_blocklist.py`, and drop it as a file named `blocklist.py` in your `ttnconfig` directory.
 
 You can import the `bs4` library in `blocklist.py` for advanced parsing.
 

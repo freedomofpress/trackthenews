@@ -32,6 +32,7 @@ requests = "^2.31.0"
 tweepy = "^4.14.0"
 "Mastodon.py" = "^1.8.1"
 lxml = {extras = ["html-clean"], version = "^5.3.0"}
+# For blocklist implementers
 beautifulsoup4 = "^4.12.3"
 
 [tool.poetry.group.dev.dependencies]

@@ -4,7 +4,7 @@
 
 If you want to run your own instance of `trackthenews`, you can download and install the package, and run its built-in configuration process. It can be installed with `pip`:
 
-Python 3.9 is what we currently test against, though it may work with other versions.
+Python 3.11 is what we currently test against, though it may work with other versions.
 
 
 ```bash
@@ -60,16 +60,16 @@ All articles are recorded in a sqlite database.
 
 ### Advanced feature: blocklist
 
-In some cases, you may wish to suppress articles from being posted, even though they would otherwise match. You can do so by writing two new functions, `check_article` and `check_paragraph`, and placing them in a file named `blocklist.py` in the configuration directory:
-- `check_article` takes an Article (and so has access to its `outlet`, `title`, and `url`) and should return `True` for any article that should be skipped in its entirety.
-- `check_paragraph` takes an Article and an individual matching paragraph and should return `True` for any paragraph that should be skipped (if other paragraphs match, the article will still be posted, but without the skipped paragraphs).
+In some cases, you may wish to suppress articles or paragraphs from being posted, even though they would otherwise match. To do so, implement a CustomBlocklist class following the abstract base class template in `trackthenews/base_blocklist.py`, and drop it as a file named `blocklist.py` in your `ttnconfig` directory.
+
+You can import the `bs4` library in `blocklist.py` for advanced parsing.
 
 ## Development
 
 ### Quick Start
 
 ```bash
-poetry env use 3.9  # Necessary if you have a different default python version
+poetry env use 3.11  # Necessary if you have a different default python version
 poetry install
 poetry run trackthenews sample_project
 # Follow the setup script instructions
@@ -83,8 +83,8 @@ poetry run trackthenews sample_project
 To develop `trackthenews`, clone the repository and install the package using [poetry][] and run the CLI tool:
 
 ```bash
-# Ensure you're using Python 3.9
-poetry env use 3.9
+# Ensure you're using Python 3.11
+poetry env use 3.11
 # This will create a virtual environment and install trackthenews and its dependencies
 poetry install --with=dev
 # This will run the setup script

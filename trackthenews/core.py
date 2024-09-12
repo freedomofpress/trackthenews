@@ -74,21 +74,21 @@ class Article:
 
         self.plaintext = h.handle(doc.summary())
 
-    def check_for_matches(self, http_session):
+    def check_for_matches(self, http_session, blocklist=None):
         """
         Clean up an article, check it against a block list, then for matches.
         """
         self.clean(http_session)
         plaintext_grafs = self.plaintext.split("\n")
 
-        if blocklist_loaded and blocklist.check_article(self):
+        if blocklist and blocklist.check_article(self):
             pass
         else:
             for graf in plaintext_grafs:
                 if any(word.lower() in graf.lower() for word in matchwords) or any(
                     word in graf for word in matchwords_case_sensitive
                 ):
-                    if blocklist_loaded and blocklist.check_paragraph(self, graf):
+                    if blocklist and blocklist.check_paragraph(self, graf):
                         continue
                     self.matching_grafs.append(graf)
 
@@ -604,14 +604,25 @@ def main():
     sys.path.append(home)
     global blocklist_loaded
     global blocklist
-    try:
-        import blocklist as blocklist
 
-        blocklist_loaded = True
-        print("Loaded blocklist.")
-    except ImportError:
+    blocklist_path = os.path.join(home, "blocklist.py")
+
+    if os.path.exists(blocklist_path):
+        try:
+            from blocklist import CustomBlocklist
+
+            blocklist_instance = CustomBlocklist()
+            blocklist_loaded = True
+            print("Loaded blocklist.")
+        except ImportError as e:
+            blocklist_loaded = False
+            print(f"Error loading blocklist: {e}")
+        except Exception as e:
+            blocklist_loaded = False
+            print(f"Unexpected error loading blocklist: {e}")
+    else:
         blocklist_loaded = False
-        print("No blocklist to load.")
+        print("No blocklist file found to load.")
 
     if matchwords:
         print("Matching against the following words: {}".format(matchwords))
@@ -660,7 +671,7 @@ def main():
                 print("Checking {} article {}/{}".format(article.outlet, counter, len(deduped)))
 
                 try:
-                    article.check_for_matches(http_session)
+                    article.check_for_matches(http_session, blocklist=blocklist_instance)
                 except Exception as e:
                     print(e)
                     print("Having trouble with that article. Skipping for now.")

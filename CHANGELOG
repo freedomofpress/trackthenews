@@ -1,6 +1,12 @@
 Changes
 =======
 
+0.4
+---
+
+* [Other] Bumped to Python 3.11 baseline
+* [Other] Explicitly added BeautifulSoup4 to requirements and encouraged its use in blocklists
+
 0.3
 ---
 

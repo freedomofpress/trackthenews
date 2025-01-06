@@ -5,7 +5,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install Poetry
         run: curl -sSL https://install.python-poetry.org | python3 -
       - uses: actions/setup-python@v4

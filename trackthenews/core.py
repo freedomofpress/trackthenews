@@ -601,7 +601,6 @@ def main():
 
     sys.path.append(home)
     global blocklist_loaded
-    global blocklist
 
     blocklist_path = os.path.join(home, "blocklist.py")
 

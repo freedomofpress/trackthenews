@@ -33,7 +33,7 @@ dynamic = ["requires-python"]
 dependencies = [
   'feedparser (>=6.0,<7.0)',
   'html2text (==2018.1.9)',
-  'Pillow (>=10.0.0,<11.0.0)',
+  'Pillow (>=12.2.0,<13.0.0)',
   'pyaml (>=18.11.0,<19.0.0)',
   'readability-lxml (>=0.8.1,<0.9.0)',
   'requests (>=2.33.0,<3.0.0)',

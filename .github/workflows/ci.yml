@@ -14,9 +14,5 @@ jobs:
           cache: 'poetry'
       - name: Install Python dependencies
         run: poetry install --with=dev
-      - name: Run Flake8
-        run: poetry run flake8 .
-      - name: Run Black
-        run: poetry run black --check .
-      - name: Run isort
-        run: poetry run isort --check --diff .
+      - name: Run Ruff
+        run: poetry run ruff check && poetry run ruff format --check

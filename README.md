@@ -4,8 +4,7 @@
 
 If you want to run your own instance of `trackthenews`, you can download and install the package, and run its built-in configuration process. It can be installed with `pip`:
 
-Python 3.11 is what we currently test against, though it may work with other versions.
-
+Python 3.13 is what we currently test against, though it may work with other versions.
 
 ```bash
 pip3 install trackthenews
@@ -52,9 +51,10 @@ Settings, such as the background color for new posts, the font, and the user-age
 ## How it works
 
 Most of the script is dedicated to the `Article` class.
-* `Article`s are created based on inputs. Currently those inputs are RSS feeds, which are stored in `rssfeeds.json`, but in future versions other inputs will include direct URLs, news APIs, Twitter feeds, or scraped pages.
-* A series of `Article` methods then scrape and isolate the contents of each article (currently that cleanup is done with a [Python port of Readability](https://github.com/buriy/python-readability), but future versions may incorporate some per-site parsing), check whether it's suitable for posting, and then prepare images for tweeting.
-* Finally, the `Article` tweets itself.
+
+- `Article`s are created based on inputs. Currently those inputs are RSS feeds, which are stored in `rssfeeds.json`, but in future versions other inputs will include direct URLs, news APIs, Twitter feeds, or scraped pages.
+- A series of `Article` methods then scrape and isolate the contents of each article (currently that cleanup is done with a [Python port of Readability](https://github.com/buriy/python-readability), but future versions may incorporate some per-site parsing), check whether it's suitable for posting, and then prepare images for tweeting.
+- Finally, the `Article` tweets itself.
 
 All articles are recorded in a sqlite database.
 
@@ -69,7 +69,7 @@ You can import the `bs4` library in `blocklist.py` for advanced parsing.
 ### Quick Start
 
 ```bash
-poetry env use 3.11  # Necessary if you have a different default python version
+poetry env use 3.13 # Necessary if you have a different default python version
 poetry install
 poetry run trackthenews sample_project
 # Follow the setup script instructions
@@ -83,8 +83,8 @@ poetry run trackthenews sample_project
 To develop `trackthenews`, clone the repository and install the package using [poetry][] and run the CLI tool:
 
 ```bash
-# Ensure you're using Python 3.11
-poetry env use 3.11
+# Ensure you're using Python 3.13
+poetry env use 3.13
 # This will create a virtual environment and install trackthenews and its dependencies
 poetry install --with=dev
 # This will run the setup script
@@ -112,28 +112,21 @@ poetry run trackthenews sample_project
 
 ### Linters
 
-We check that all code conforms to [black][], [flake8][], and [isort][]. To run these checks locally:
+We check that all code conforms to [ruff][]. To run these checks locally:
 
 ```bash
-poetry run black --check .  # To automatically fix issues, exclude --check flag
-poetry run flake8
-poetry run isort --check-only --diff .  # To automatically fix issues, exclude --check-only and --diff flag
+poetry run ruff check .  # To automatically fix issues, exclude --check flag
+poetry run ruff format --check
 ```
 
 We also provide the following makefile shortcuts to run these commands:
 
 ```bash
-make black
-make flake8
-make isort
-make black-fix  # Automatically fix issues
-make isort-fix  # Automatically fix issues
-make all        # Run all three checks (check only, no fixes)
+make ruff
+make ruff-fix  # Automatically fix issues
 ```
 
-[black]: https://black.readthedocs.io/en/stable/
-[flake8]: https://flake8.pycqa.org/en/latest/
-[isort]: https://pycqa.github.io/isort/
+[ruff]: https://docs.astral.sh/ruff/
 
 ## License
 

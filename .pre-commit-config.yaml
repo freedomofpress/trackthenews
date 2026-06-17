@@ -1,0 +1,25 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: end-of-file-fixer
+        name: Enforce end of file format
+
+      - id: trailing-whitespace
+        name: Enforce removal of trailing whitespace
+
+      - id: mixed-line-ending
+        args: [--fix=lf]
+
+      - id: fix-byte-order-marker
+
+      - id: check-json
+      - id: check-toml
+      - id: check-yaml
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.16
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+      - id: ruff-format

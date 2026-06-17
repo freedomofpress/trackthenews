@@ -1,27 +1,14 @@
-.PHONY: flake8 isort isort-fix black black-fix lint-all
+.PHONY: ruff ruff-fix
 
 # Directory to run the linters on
 DIR = .
 
-flake8:
+ruff:
 	@echo "Running Flake8"
-	@poetry run flake8 $(DIR)
+	@poetry run ruff check $(DIR)
+	@poetry run ruff format --check $(DIR)
 
-isort:
-	@echo "Running isort"
-	@poetry run isort --check --diff $(DIR)
-
-isort-fix:
-	@echo "Running isort (fix)"
-	@poetry run isort $(DIR)
-
-black:
-	@echo "Running Black"
-	@poetry run black --check $(DIR)
-
-black-fix:
+ruff-fix:
 	@echo "Running Black (fix)"
-	@poetry run black $(DIR)
-
-lint-all: flake8 isort black
-	@echo "Linting complete"
+	@poetry run ruff check --fix $(DIR)
+	@poetry run ruff format $(DIR)

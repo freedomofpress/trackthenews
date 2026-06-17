@@ -1,11 +1,3 @@
-[tool.black]
-line-length = 100
-target-version = ['py39']
-
-[tool.isort]
-profile = "black"
-multi_line_output = 3
-
 [tool.poetry]
 include = ["trackthenews/fonts/*"]
 
@@ -13,9 +5,18 @@ include = ["trackthenews/fonts/*"]
 python = ">=3.10,<4.0"
 
 [tool.poetry.group.dev.dependencies]
-black = "^26.5.1"
-flake8 = "^7.0.0"
-isort = "^8.0.0"
+ruff = "^0.15.16"
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+ignore = ["E501", "E266"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
 
 [build-system]
 requires = ["poetry-core"]

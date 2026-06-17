@@ -2,7 +2,7 @@
 include = ["trackthenews/fonts/*"]
 
 [tool.poetry.dependencies]
-python = ">=3.10,<4.0"
+python = ">=3.13,<4.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.15.16"

@@ -13,7 +13,7 @@ include = ["trackthenews/fonts/*"]
 python = ">=3.10,<4.0"
 
 [tool.poetry.group.dev.dependencies]
-black = "^26.3.1"
+black = "^26.5.1"
 flake8 = "^7.0.0"
 isort = "^8.0.0"
 
@@ -31,16 +31,16 @@ authors = [{name = "Freedom of the Press Foundation", email = "info@freedom.pres
 maintainers = [{name = "Erik Moeller", email = "erik@freedom.press"}, {name = "Harris Lapiroff", email = "harris@freedom.press"}]
 dynamic = ["requires-python"]
 dependencies = [
-  'feedparser (>=6.0,<7.0)',
+  'feedparser (>=6.0.12,<7.0)',
   'html2text (==2018.1.9)',
   'Pillow (>=10.0.0,<11.0.0)',
   'pyaml (>=18.11.0,<19.0.0)',
-  'readability-lxml (>=0.8.1,<0.9.0)',
-  'requests (>=2.33.0,<3.0.0)',
+  'readability-lxml (>=0.8.4.1,<0.9.0)',
+  'requests (>=2.34.2,<3.0.0)',
   'tweepy (>=4.14.0,<5.0.0)',
   'Mastodon.py (>=1.8.1,<2.0.0)',
-  'lxml[html-clean] (>=5.3.0,<6.0.0)',
-  'beautifulsoup4 (>=4.12.3,<5.0.0)'
+  'lxml[html-clean] (>=5.4.0,<6.0.0)',
+  'beautifulsoup4 (>=4.15.0,<5.0.0)'
 ]
 
 [project.urls]

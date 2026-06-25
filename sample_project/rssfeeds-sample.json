@@ -48,12 +48,6 @@
         "redirectLinks": false
     },
     {
-        "url": "http://www.miamiherald.com/news/politics-government/?widgetName=rssfeed&widgetContentId=712015&getXmlFeed=true",
-        "outlet": "Miami Herald",
-        "delicateURLs": false,
-        "redirectLinks": false
-    },
-    {
         "url": "http://www.chicagotribune.com/rss2.0.xml",
         "outlet": "Chicago Tribune",
         "delicateURLs": false,
@@ -66,12 +60,6 @@
         "redirectLinks": true
     },
     {
-        "url": "https://feeds.thedailybeast.com/rss/articles",
-        "outlet": "The Daily Beast",
-        "delicateURLs": false,
-        "redirectLinks": false
-    },
-    {
         "url": "https://www.huffingtonpost.com/section/politics/feed",
         "outlet": "HuffPost",
         "delicateURLs": false,
@@ -80,18 +68,6 @@
     {
         "url": "https://www.huffingtonpost.com/section/us-news/feed",
         "outlet": "HuffPost",
-        "delicateURLs": false,
-        "redirectLinks": false
-    },
-    {
-        "url": "http://www.mcclatchydc.com/news/?widgetName=rssfeed&widgetContentId=712015&getXmlFeed=true",
-        "outlet": "McClatchyDC",
-        "delicateURLs": false,
-        "redirectLinks": false
-    },
-    {
-        "url": "https://motherboard.vice.com/en_us/rss",
-        "outlet": "Motherboard",
         "delicateURLs": false,
         "redirectLinks": false
     }

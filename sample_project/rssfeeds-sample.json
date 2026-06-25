@@ -42,24 +42,6 @@
         "redirectLinks": false
     },
     {
-        "url": "http://feeds.reuters.com/Reuters/domesticNews",
-        "outlet": "Reuters",
-        "delicateURLs": false,
-        "redirectLinks": true
-    },
-    {
-        "url": "http://feeds.reuters.com/reuters/topNews",
-        "outlet": "Reuters",
-        "delicateURLs": false,
-        "redirectLinks": true
-    },
-    {
-        "url": "http://feeds.reuters.com/Reuters/PoliticsNews",
-        "outlet": "Reuters",
-        "delicateURLs": false,
-        "redirectLinks": true
-    },
-    {
         "url": "https://gizmodo.com/rss",
         "outlet": "Gizmodo",
         "delicateURLs": false,

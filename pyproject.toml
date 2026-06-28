@@ -5,7 +5,7 @@ include = ["trackthenews/fonts/*"]
 python = ">=3.13,<4.0"
 
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.15.16"
+ruff = "^0.15.18"
 
 [tool.ruff]
 line-length = 100

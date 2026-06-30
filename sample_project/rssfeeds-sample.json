@@ -1,17 +1,5 @@
 [
     {
-        "url": "https://www.buzzfeed.com/usnews.xml",
-        "outlet": "Buzzfeed",
-        "delicateURLs": false,
-        "redirectLinks": false
-    },
-    {
-        "url": "https://www.buzzfeed.com/jasonleopold.xml",
-        "outlet": "Buzzfeed",
-        "delicateURLs": false,
-        "redirectLinks": false
-    },
-    {
         "url": "http://feeds.washingtonpost.com/rss/national",
         "outlet": "Washington Post",
         "delicateURLs": false,
@@ -21,30 +9,6 @@
         "url": "http://feeds.washingtonpost.com/rss/politics",
         "outlet": "Washington Post",
         "delicateURLs": false,
-        "redirectLinks": false
-    },
-    {
-        "url": "http://hosted.ap.org/lineups/TOPHEADS.rss?SITE=AP&SECTION=HOME",
-        "outlet": "AP",
-        "delicateURLs": true,
-        "redirectLinks": false
-    },
-    {
-        "url": "http://hosted.ap.org/lineups/USHEADS.rss?SITE=AP&SECTION=HOME",
-        "outlet": "AP",
-        "delicateURLs": true,
-        "redirectLinks": false
-    },
-    {
-        "url": "http://hosted.ap.org/lineups/WORLDHEADS.rss?SITE=AP&SECTION=HOME",
-        "outlet": "AP",
-        "delicateURLs": true,
-        "redirectLinks": false
-    },
-    {
-        "url": "http://hosted.ap.org/lineups/POLITICSHEADS.rss?SITE=AP&SECTION=HOME",
-        "outlet": "AP",
-        "delicateURLs": true,
         "redirectLinks": false
     },
     {
@@ -78,32 +42,8 @@
         "redirectLinks": false
     },
     {
-        "url": "http://feeds.reuters.com/Reuters/domesticNews",
-        "outlet": "Reuters",
-        "delicateURLs": false,
-        "redirectLinks": true
-    },
-    {
-        "url": "http://feeds.reuters.com/reuters/topNews",
-        "outlet": "Reuters",
-        "delicateURLs": false,
-        "redirectLinks": true
-    },
-    {
-        "url": "http://feeds.reuters.com/Reuters/PoliticsNews",
-        "outlet": "Reuters",
-        "delicateURLs": false,
-        "redirectLinks": true
-    },
-    {
         "url": "https://gizmodo.com/rss",
         "outlet": "Gizmodo",
-        "delicateURLs": false,
-        "redirectLinks": false
-    },
-    {
-        "url": "http://www.miamiherald.com/news/politics-government/?widgetName=rssfeed&widgetContentId=712015&getXmlFeed=true",
-        "outlet": "Miami Herald",
         "delicateURLs": false,
         "redirectLinks": false
     },
@@ -120,12 +60,6 @@
         "redirectLinks": true
     },
     {
-        "url": "https://feeds.thedailybeast.com/rss/articles",
-        "outlet": "The Daily Beast",
-        "delicateURLs": false,
-        "redirectLinks": false
-    },
-    {
         "url": "https://www.huffingtonpost.com/section/politics/feed",
         "outlet": "HuffPost",
         "delicateURLs": false,
@@ -134,18 +68,6 @@
     {
         "url": "https://www.huffingtonpost.com/section/us-news/feed",
         "outlet": "HuffPost",
-        "delicateURLs": false,
-        "redirectLinks": false
-    },
-    {
-        "url": "http://www.mcclatchydc.com/news/?widgetName=rssfeed&widgetContentId=712015&getXmlFeed=true",
-        "outlet": "McClatchyDC",
-        "delicateURLs": false,
-        "redirectLinks": false
-    },
-    {
-        "url": "https://motherboard.vice.com/en_us/rss",
-        "outlet": "Motherboard",
         "delicateURLs": false,
         "redirectLinks": false
     }

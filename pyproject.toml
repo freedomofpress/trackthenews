@@ -6,6 +6,10 @@ python = ">=3.13,<4.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.15.22"
+pytest = "^9.0.1"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 100

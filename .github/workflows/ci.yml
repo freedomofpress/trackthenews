@@ -16,3 +16,18 @@ jobs:
         run: poetry install --with=dev
       - name: Run Ruff
         run: poetry run ruff check && poetry run ruff format --check
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.0
+      - name: Install Poetry
+        run: curl -sSL https://install.python-poetry.org | python3 -
+      - uses: actions/setup-python@v6.3.0
+        with:
+          python-version: '3.13'
+          cache: 'poetry'
+      - name: Install Python dependencies
+        run: poetry install --with=dev
+      - name: Run pytest
+        run: poetry run pytest

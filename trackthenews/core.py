@@ -32,6 +32,16 @@ from readability import Document
 
 HTTP_TIMEOUT_SECONDS = 30
 
+# Excerpt images are rendered as JPEGs. The extension in IMAGE_FILENAME is
+# load-bearing: tweepy resolves an upload's MIME type with
+# mimetypes.guess_type(filename), so an extensionless name resolves to None and
+# tweepy raises an AttributeError while checking whether the file is a video.
+# (Before Python 3.13 removed imghdr, tweepy sniffed the file's magic bytes and
+# the filename didn't matter.) Keep all three of these in agreement.
+IMAGE_FORMAT = "jpeg"
+IMAGE_FILENAME = f"image.{IMAGE_FORMAT}"
+IMAGE_MIME_TYPE = f"image/{IMAGE_FORMAT}"
+
 
 class Article:
     def __init__(self, outlet, title, url, delicate=False, redirects=False):
@@ -96,7 +106,7 @@ class Article:
         for graf in self.matching_grafs[:4]:
             img = render_img(graf, square=square)
             img_io = BytesIO()
-            img.save(img_io, format="jpeg", quality=95)
+            img.save(img_io, format=IMAGE_FORMAT, quality=95)
             img_io.seek(0)
             img_files.append(img_io)
 
@@ -161,7 +171,7 @@ class Article:
         for idx, img_file in enumerate(img_files):
             try:
                 alt_text = self.truncate_alt_text(self.matching_grafs[idx])
-                res = mastodon.media_post(img_file, mime_type="image/jpeg", description=alt_text)
+                res = mastodon.media_post(img_file, mime_type=IMAGE_MIME_TYPE, description=alt_text)
                 media_ids.append(res["id"])
             except MastodonError:
                 pass
@@ -225,7 +235,7 @@ def upload_twitter_images(img_files: Iterable[IO]) -> List[tweepy.models.Media]:
 
     for img in img_files:
         try:
-            res = twitter.media_upload(filename="image", file=img)
+            res = twitter.media_upload(filename=IMAGE_FILENAME, file=img)
             media.append(res)
         except tweepy.errors.TweepyException:
             pass

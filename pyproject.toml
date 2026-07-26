@@ -30,7 +30,7 @@ build-backend = "poetry.core.masonry.api"
 name = "trackthenews"
 description = "Monitor RSS feeds for keywords and act on matching results. A special project of the Freedom of the Press Foundation."
 license = "MIT"
-version = "0.4"
+version = "0.5"
 readme = "README.md"
 authors = [{name = "Freedom of the Press Foundation", email = "info@freedom.press"}]
 maintainers = [{name = "Erik Moeller", email = "erik@freedom.press"}, {name = "Harris Lapiroff", email = "harris@freedom.press"}]

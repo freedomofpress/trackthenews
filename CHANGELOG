@@ -1,6 +1,11 @@
 Changes
 =======
 
+0.5
+---
+
+* [Other] Give Twitter uploads a filename tweepy can type [#118](https://github.com/freedomofpress/trackthenews/pull/118)
+
 0.4
 ---
 

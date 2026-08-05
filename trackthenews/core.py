@@ -9,10 +9,9 @@ import sqlite3
 import sys
 import textwrap
 import time
-from builtins import input
 from collections.abc import Iterable
 from datetime import datetime
-from io import BytesIO, open
+from io import BytesIO
 from typing import IO
 
 import feedparser
@@ -62,7 +61,7 @@ class Article:
         # Follow those links, then store only the final destination.
         if self.redirects:
             res = http_session.head(self.url, allow_redirects=True, timeout=30)
-            self.url = res.headers["location"] if "location" in res.headers else res.url
+            self.url = res.headers.get("location", res.url)
 
         # Some outlets' URLs don't play well with modifications, so those we
         # store crufty. Otherwise, decruft with extreme prejudice.
@@ -138,7 +137,7 @@ class Article:
             print("Twitter is not configured. Skipping tweet.")
             return
 
-        square = False if len(self.matching_grafs) == 1 else True
+        square = len(self.matching_grafs) != 1
         img_files = self.prepare_images(square)
 
         media = upload_twitter_images(img_files)
@@ -163,7 +162,7 @@ class Article:
             print("Mastodon is not configured. Skipping toot.")
             return
 
-        square = False if len(self.matching_grafs) == 1 else True
+        square = len(self.matching_grafs) != 1
         img_files = self.prepare_images(square)
 
         mastodon = get_mastodon_instance()
@@ -329,7 +328,7 @@ def config_twitter(config):
     if twitter_setup.lower().startswith("n"):
         return config
 
-    if "twitter" in config.keys():
+    if "twitter" in config:
         replace = input("Twitter configuration already exists. Replace? (Y/n) ")
         if replace.lower() in ["n", "no"]:
             return config
@@ -376,7 +375,7 @@ def config_mastodon(config):
     if mastodon_setup.lower().startswith("n"):
         return config
 
-    if "mastodon" in config.keys():
+    if "mastodon" in config:
         replace = input("Mastodon configuration already exists. Replace? (Y/n) ")
         if replace.lower() in ["n", "no"]:
             return config
@@ -487,13 +486,7 @@ def initial_setup():
         if to_configure.lower() in ["n", "no", "q", "exit", "quit"]:
             sys.exit("Ok, quitting the program without configuring.")
 
-    if sys.version_info.major > 2:
-        os.makedirs(home, exist_ok=True)
-    else:
-        try:
-            os.makedirs(home)
-        except Exception:
-            pass
+    os.makedirs(home, exist_ok=True)
 
     if "db" not in config:
         config["db"] = "trackthenews.db"
@@ -648,10 +641,10 @@ def main():
     with requests.Session() as http_session:
         http_session.headers.update({"User-Agent": ua})
         for feed in rss_feeds:
-            outlet = feed["outlet"] if "outlet" in feed else ""
+            outlet = feed.get("outlet", "")
             url = feed["url"]
-            delicate = True if feed.get("delicateURLs") else False
-            redirects = True if feed.get("redirectLinks") else False
+            delicate = bool(feed.get("delicateURLs"))
+            redirects = bool(feed.get("redirectLinks"))
 
             try:
                 articles = parse_feed(outlet, url, delicate, redirects, http_session)

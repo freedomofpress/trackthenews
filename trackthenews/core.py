@@ -3,6 +3,7 @@
 # given words or phrases, and posts the results to Twitter.
 
 import argparse
+import datetime
 import json
 import os
 import sqlite3
@@ -10,7 +11,6 @@ import sys
 import textwrap
 import time
 from collections.abc import Iterable
-from datetime import datetime
 from io import BytesIO
 from typing import IO
 
@@ -684,7 +684,7 @@ def main():
                         article.url,
                         article.tweeted,
                         article.tooted,
-                        datetime.utcnow(),
+                        datetime.datetime.now(tz=datetime.UTC),
                     ),
                 )
 

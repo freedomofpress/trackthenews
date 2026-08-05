@@ -3,16 +3,16 @@
 # given words or phrases, and posts the results to Twitter.
 
 import argparse
+import datetime
 import json
 import os
 import sqlite3
 import sys
 import textwrap
 import time
-from builtins import input
-from datetime import datetime
-from io import BytesIO, open
-from typing import IO, Iterable, List
+from collections.abc import Iterable
+from io import BytesIO
+from typing import IO
 
 import feedparser
 import html2text
@@ -31,6 +31,16 @@ from readability import Document
 
 
 HTTP_TIMEOUT_SECONDS = 30
+
+# Excerpt images are rendered as JPEGs. The extension in IMAGE_FILENAME is
+# load-bearing: tweepy resolves an upload's MIME type with
+# mimetypes.guess_type(filename), so an extensionless name resolves to None and
+# tweepy raises an AttributeError while checking whether the file is a video.
+# (Before Python 3.13 removed imghdr, tweepy sniffed the file's magic bytes and
+# the filename didn't matter.) Keep all three of these in agreement.
+IMAGE_FORMAT = "jpeg"
+IMAGE_FILENAME = f"image.{IMAGE_FORMAT}"
+IMAGE_MIME_TYPE = f"image/{IMAGE_FORMAT}"
 
 
 class Article:
@@ -51,7 +61,7 @@ class Article:
         # Follow those links, then store only the final destination.
         if self.redirects:
             res = http_session.head(self.url, allow_redirects=True, timeout=30)
-            self.url = res.headers["location"] if "location" in res.headers else res.url
+            self.url = res.headers.get("location", res.url)
 
         # Some outlets' URLs don't play well with modifications, so those we
         # store crufty. Otherwise, decruft with extreme prejudice.
@@ -96,7 +106,7 @@ class Article:
         for graf in self.matching_grafs[:4]:
             img = render_img(graf, square=square)
             img_io = BytesIO()
-            img.save(img_io, format="jpeg", quality=95)
+            img.save(img_io, format=IMAGE_FORMAT, quality=95)
             img_io.seek(0)
             img_files.append(img_io)
 
@@ -127,7 +137,7 @@ class Article:
             print("Twitter is not configured. Skipping tweet.")
             return
 
-        square = False if len(self.matching_grafs) == 1 else True
+        square = len(self.matching_grafs) != 1
         img_files = self.prepare_images(square)
 
         media = upload_twitter_images(img_files)
@@ -138,7 +148,7 @@ class Article:
         # Tweets can be 280 characters
         title = self.truncate_title(280, source)
 
-        content = "{}{} {}".format(source, title, self.url)
+        content = f"{source}{title} {self.url}"
 
         twitter = get_twitter_client()
 
@@ -152,7 +162,7 @@ class Article:
             print("Mastodon is not configured. Skipping toot.")
             return
 
-        square = False if len(self.matching_grafs) == 1 else True
+        square = len(self.matching_grafs) != 1
         img_files = self.prepare_images(square)
 
         mastodon = get_mastodon_instance()
@@ -161,7 +171,7 @@ class Article:
         for idx, img_file in enumerate(img_files):
             try:
                 alt_text = self.truncate_alt_text(self.matching_grafs[idx])
-                res = mastodon.media_post(img_file, mime_type="image/jpeg", description=alt_text)
+                res = mastodon.media_post(img_file, mime_type=IMAGE_MIME_TYPE, description=alt_text)
                 media_ids.append(res["id"])
             except MastodonError:
                 pass
@@ -171,7 +181,7 @@ class Article:
         # Toots can be 500 characters
         title = self.truncate_title(500, source)
 
-        status = "{}{} {}".format(source, title, self.url)
+        status = f"{source}{title} {self.url}"
 
         mastodon.status_post(status=status, media_ids=media_ids)
 
@@ -217,7 +227,7 @@ def get_twitter_client_v1():
     return tweepy.API(tweepy_auth)
 
 
-def upload_twitter_images(img_files: Iterable[IO]) -> List[tweepy.models.Media]:
+def upload_twitter_images(img_files: Iterable[IO]) -> list[tweepy.models.Media]:
     """Upload images to Twitter and return their IDs."""
     twitter = get_twitter_client_v1()
 
@@ -225,7 +235,7 @@ def upload_twitter_images(img_files: Iterable[IO]) -> List[tweepy.models.Media]:
 
     for img in img_files:
         try:
-            res = twitter.media_upload(filename="image", file=img)
+            res = twitter.media_upload(filename=IMAGE_FILENAME, file=img)
             media.append(res)
         except tweepy.errors.TweepyException:
             pass
@@ -318,7 +328,7 @@ def config_twitter(config):
     if twitter_setup.lower().startswith("n"):
         return config
 
-    if "twitter" in config.keys():
+    if "twitter" in config:
         replace = input("Twitter configuration already exists. Replace? (Y/n) ")
         if replace.lower() in ["n", "no"]:
             return config
@@ -344,7 +354,7 @@ def config_twitter(config):
 
     auth_url = tw.get_authorization_url()
 
-    pin = input("Enter the pin found at {} ".format(auth_url)).strip()
+    pin = input(f"Enter the pin found at {auth_url} ").strip()
 
     oauth_token, oauth_secret = tw.get_access_token(pin)
 
@@ -365,7 +375,7 @@ def config_mastodon(config):
     if mastodon_setup.lower().startswith("n"):
         return config
 
-    if "mastodon" in config.keys():
+    if "mastodon" in config:
         replace = input("Mastodon configuration already exists. Replace? (Y/n) ")
         if replace.lower() in ["n", "no"]:
             return config
@@ -443,8 +453,6 @@ def setup_matchlist():
             " You can add case-sensitive entries to match, one per line.".format(**locals())
         )
 
-    return
-
 
 def setup_rssfeedsfile():
     path = os.path.join(home, "rssfeeds.json")
@@ -470,7 +478,7 @@ def initial_setup():
         to_configure = input(
             "It looks like this is the first time you've run trackthenews,"
             " or you've moved or deleted its configuration files.\n"
-            "Would you like to create a new configuration in {}? (Y/n) ".format(home)
+            f"Would you like to create a new configuration in {home}? (Y/n) "
         )
 
         config = {}
@@ -478,13 +486,7 @@ def initial_setup():
         if to_configure.lower() in ["n", "no", "q", "exit", "quit"]:
             sys.exit("Ok, quitting the program without configuring.")
 
-    if sys.version_info.major > 2:
-        os.makedirs(home, exist_ok=True)
-    else:
-        try:
-            os.makedirs(home)
-        except Exception:
-            pass
+    os.makedirs(home, exist_ok=True)
 
     if "db" not in config:
         config["db"] = "trackthenews.db"
@@ -553,7 +555,7 @@ def main():
     global home
     home = os.path.abspath(args.dir)
 
-    print("Running with configuration files in {}".format(home))
+    print(f"Running with configuration files in {home}")
 
     if args.config:
         initial_setup()
@@ -596,7 +598,7 @@ def main():
     if not (matchwords or matchwords_case_sensitive):
         sys.exit(
             "You must add words to at least one of the matchwords lists,"
-            " located at {} and {}.".format(matchlist, matchlist_case_sensitive)
+            f" located at {matchlist} and {matchlist_case_sensitive}."
         )
 
     sys.path.append(home)
@@ -614,7 +616,7 @@ def main():
         except ImportError as e:
             blocklist_loaded = False
             print(f"Error loading blocklist: {e}")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 - blocklist.py is arbitrary user code; any error can be raised
             blocklist_loaded = False
             print(f"Unexpected error loading blocklist: {e}")
     else:
@@ -622,13 +624,9 @@ def main():
         print("No blocklist file found to load.")
 
     if matchwords:
-        print("Matching against the following words: {}".format(matchwords))
+        print(f"Matching against the following words: {matchwords}")
     if matchwords_case_sensitive:
-        print(
-            "Matching against the following case-sensitive words: {}".format(
-                matchwords_case_sensitive
-            )
-        )
+        print(f"Matching against the following case-sensitive words: {matchwords_case_sensitive}")
 
     rssfeedsfile = os.path.join(home, "rssfeeds.json")
     if not os.path.isfile(rssfeedsfile):
@@ -638,17 +636,15 @@ def main():
         try:
             rss_feeds = json.load(f)
         except json.JSONDecodeError:
-            sys.exit(
-                "You must add RSS feeds to the RSS feeds list, located at {}.".format(rssfeedsfile)
-            )
+            sys.exit(f"You must add RSS feeds to the RSS feeds list, located at {rssfeedsfile}.")
 
     with requests.Session() as http_session:
         http_session.headers.update({"User-Agent": ua})
         for feed in rss_feeds:
-            outlet = feed["outlet"] if "outlet" in feed else ""
+            outlet = feed.get("outlet", "")
             url = feed["url"]
-            delicate = True if "delicateURLs" in feed and feed["delicateURLs"] else False
-            redirects = True if "redirectLinks" in feed and feed["redirectLinks"] else False
+            delicate = bool(feed.get("delicateURLs"))
+            redirects = bool(feed.get("redirectLinks"))
 
             try:
                 articles = parse_feed(outlet, url, delicate, redirects, http_session)
@@ -665,14 +661,13 @@ def main():
                     deduped.append(article)
 
             for counter, article in enumerate(deduped, 1):
-                print("Checking {} article {}/{}".format(article.outlet, counter, len(deduped)))
+                print(f"Checking {article.outlet} article {counter}/{len(deduped)}")
 
                 try:
                     article.check_for_matches(http_session, blocklist=blocklist_instance)
-                except Exception as e:
+                except Exception as e:  # noqa: BLE001 - can raise from requests, parsing, or user blocklist code
                     print(e)
                     print("Having trouble with that article. Skipping for now.")
-                    pass
 
                 if article.matching_grafs:
                     print("Got one!")
@@ -689,7 +684,7 @@ def main():
                         article.url,
                         article.tweeted,
                         article.tooted,
-                        datetime.utcnow(),
+                        datetime.datetime.now(tz=datetime.UTC),
                     ),
                 )
 

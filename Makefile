@@ -4,7 +4,7 @@
 DIR = .
 
 ruff:
-	@echo "Running ruff"
+	@echo "Running ruff (check)"
 	@poetry run ruff check $(DIR)
 	@poetry run ruff format --check $(DIR)
 

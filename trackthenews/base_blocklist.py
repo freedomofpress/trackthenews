@@ -7,9 +7,7 @@ class BaseBlocklist(ABC):
     @abstractmethod
     def check_article(self, article):
         """Check if an entire article should be blocked."""
-        pass
 
     @abstractmethod
     def check_paragraph(self, article, paragraph):
         """Check if an otherwise matchign paragraph should be blocked based on its content."""
-        pass

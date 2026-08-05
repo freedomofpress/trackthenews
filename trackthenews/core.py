@@ -616,7 +616,7 @@ def main():
         except ImportError as e:
             blocklist_loaded = False
             print(f"Error loading blocklist: {e}")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 - blocklist.py is arbitrary user code; any error can be raised
             blocklist_loaded = False
             print(f"Unexpected error loading blocklist: {e}")
     else:
@@ -665,7 +665,7 @@ def main():
 
                 try:
                     article.check_for_matches(http_session, blocklist=blocklist_instance)
-                except Exception as e:
+                except Exception as e:  # noqa: BLE001 - can raise from requests, parsing, or user blocklist code
                     print(e)
                     print("Having trouble with that article. Skipping for now.")
 

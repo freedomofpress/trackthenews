@@ -1,66 +1,30 @@
 [
     {
-        "url": "https://www.buzzfeed.com/usnews.xml",
-        "outlet": "Buzzfeed",
-        "delicateURLs": false,
-        "redirectLinks": false
-    },
-    {
-        "url": "https://www.buzzfeed.com/jasonleopold.xml",
-        "outlet": "Buzzfeed",
-        "delicateURLs": false,
-        "redirectLinks": false
-    },
-    {
-        "url": "http://feeds.washingtonpost.com/rss/national",
+        "url": "https://feeds.washingtonpost.com/rss/national",
         "outlet": "Washington Post",
         "delicateURLs": false,
         "redirectLinks": false
     },
     {
-        "url": "http://feeds.washingtonpost.com/rss/politics",
+        "url": "https://feeds.washingtonpost.com/rss/politics",
         "outlet": "Washington Post",
         "delicateURLs": false,
         "redirectLinks": false
     },
     {
-        "url": "http://hosted.ap.org/lineups/TOPHEADS.rss?SITE=AP&SECTION=HOME",
-        "outlet": "AP",
-        "delicateURLs": true,
-        "redirectLinks": false
-    },
-    {
-        "url": "http://hosted.ap.org/lineups/USHEADS.rss?SITE=AP&SECTION=HOME",
-        "outlet": "AP",
-        "delicateURLs": true,
-        "redirectLinks": false
-    },
-    {
-        "url": "http://hosted.ap.org/lineups/WORLDHEADS.rss?SITE=AP&SECTION=HOME",
-        "outlet": "AP",
-        "delicateURLs": true,
-        "redirectLinks": false
-    },
-    {
-        "url": "http://hosted.ap.org/lineups/POLITICSHEADS.rss?SITE=AP&SECTION=HOME",
-        "outlet": "AP",
-        "delicateURLs": true,
-        "redirectLinks": false
-    },
-    {
-        "url": "http://www.latimes.com/rss2.0.xml",
+        "url": "https://www.latimes.com/rss2.0.xml",
         "outlet": "LA Times",
         "delicateURLs": false,
         "redirectLinks": false
     },
     {
-        "url": "http://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
+        "url": "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
         "outlet": "New York Times",
         "delicateURLs": false,
         "redirectLinks": false
     },
     {
-        "url": "http://feeds.propublica.org/propublica/main",
+        "url": "https://www.propublica.org/feeds/propublica/main",
         "outlet": "ProPublica",
         "delicateURLs": false,
         "redirectLinks": true
@@ -78,38 +42,8 @@
         "redirectLinks": false
     },
     {
-        "url": "http://feeds.reuters.com/Reuters/domesticNews",
-        "outlet": "Reuters",
-        "delicateURLs": false,
-        "redirectLinks": true
-    },
-    {
-        "url": "http://feeds.reuters.com/reuters/topNews",
-        "outlet": "Reuters",
-        "delicateURLs": false,
-        "redirectLinks": true
-    },
-    {
-        "url": "http://feeds.reuters.com/Reuters/PoliticsNews",
-        "outlet": "Reuters",
-        "delicateURLs": false,
-        "redirectLinks": true
-    },
-    {
-        "url": "https://gizmodo.com/rss",
+        "url": "https://gizmodo.com/feed",
         "outlet": "Gizmodo",
-        "delicateURLs": false,
-        "redirectLinks": false
-    },
-    {
-        "url": "http://www.miamiherald.com/news/politics-government/?widgetName=rssfeed&widgetContentId=712015&getXmlFeed=true",
-        "outlet": "Miami Herald",
-        "delicateURLs": false,
-        "redirectLinks": false
-    },
-    {
-        "url": "http://www.chicagotribune.com/rss2.0.xml",
-        "outlet": "Chicago Tribune",
         "delicateURLs": false,
         "redirectLinks": false
     },
@@ -120,7 +54,7 @@
         "redirectLinks": true
     },
     {
-        "url": "https://feeds.thedailybeast.com/rss/articles",
+        "url": "https://www.thedailybeast.com/arc/outboundfeeds/rss/",
         "outlet": "The Daily Beast",
         "delicateURLs": false,
         "redirectLinks": false
@@ -138,14 +72,14 @@
         "redirectLinks": false
     },
     {
-        "url": "http://www.mcclatchydc.com/news/?widgetName=rssfeed&widgetContentId=712015&getXmlFeed=true",
-        "outlet": "McClatchyDC",
+        "url": "https://www.theguardian.com/us-news/rss",
+        "outlet": "The Guardian",
         "delicateURLs": false,
         "redirectLinks": false
     },
     {
-        "url": "https://motherboard.vice.com/en_us/rss",
-        "outlet": "Motherboard",
+        "url": "https://feeds.npr.org/1001/rss.xml",
+        "outlet": "NPR",
         "delicateURLs": false,
         "redirectLinks": false
     }

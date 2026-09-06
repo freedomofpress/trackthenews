@@ -5,7 +5,7 @@ include = ["trackthenews/fonts/*"]
 python = ">=3.13,<4.0"
 
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.16.4"
+ruff = "^0.16.5"
 pytest = "^9.0.1"
 
 [tool.pytest.ini_options]

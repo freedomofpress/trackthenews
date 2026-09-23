@@ -53,3 +53,7 @@ repository = "https://github.com/freedomofpress/trackthenews"
 
 [project.scripts]
 trackthenews = 'trackthenews:main'
+
+[tool.black]
+line-length = 100
+target-version = ["py313"]

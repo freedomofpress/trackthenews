@@ -48,6 +48,20 @@ trackthenews ~/foo/bar/path
 
 Settings, such as the background color for new posts, the font, and the user-agent, are all located in `config.yaml`, in the designated configuration directory.
 
+Publisher failures are logged to stderr and do not stop the other publisher. To also send alerts to the local syslog socket and a webhook, add:
+
+```yaml
+notifications:
+  syslog: true
+  syslog_socket: /dev/log  # optional; default is /dev/log
+  webhook:
+    url: https://example.com/your-webhook
+    type: custom  # custom, slack, or discord
+```
+
+`custom` sends a JSON object with `event`, `publisher`, `article_url`, `error`, and `message`. Slack receives `text`; Discord receives `content`. All webhook requests have a 30-second timeout. Keep the webhook URL private because it often contains a secret. Notification delivery failures are logged to stderr and do not interrupt publishing. Omit either `syslog` or `webhook` to disable that channel. Articles are recorded after publishing attempts, so a failed destination is not automatically retried on the next run.
+
+
 ## How it works
 
 Most of the script is dedicated to the `Article` class.
@@ -112,11 +126,12 @@ poetry run trackthenews sample_project
 
 ### Linters
 
-We check that all code conforms to [ruff][]. To run these checks locally:
+CI checks code with Flake8 and Black. Run these checks locally:
 
 ```bash
-poetry run ruff check .  # To automatically fix issues, exclude --check flag
-poetry run ruff format --check
+python -m pip install "black==25.1.0" "flake8==7.1.2"
+flake8 trackthenews tests
+black --check trackthenews tests
 ```
 
 We also provide the following makefile shortcuts to run these commands:
@@ -126,7 +141,7 @@ make ruff
 make ruff-fix  # Automatically fix issues
 ```
 
-[ruff]: https://docs.astral.sh/ruff/
+
 
 ## License
 

@@ -10,7 +10,7 @@ Changes
 * [Fixed] DeprecationWarning on SQLite's conn.execute() with use of datetime
 * [Added] `--no-publish` to check feeds and record articles without posting to X or Mastodon. Recorded articles are treated as seen on later runs.
 * [Added] Optional syslog and webhook error notifications in config.yaml, with custom, Slack, and Discord webhook payloads. Notification failures do not interrupt publishing.
-* [Other] Added Black and Flake8 checks to CI and automated tests for publishing failures, notifications, the missing blocklist, `--no-publish`, and redirect failures.
+* [Other] Added Ruff checks to CI and automated tests for publishing failures, notifications, the missing blocklist, `--no-publish`, and redirect failures.
 
 0.5
 ---

@@ -14,10 +14,8 @@ jobs:
           cache: 'poetry'
       - name: Install Python dependencies
         run: poetry install --with=dev
-      - name: Install formatting tools
-        run: python -m pip install "black==25.1.0" "flake8==7.1.2"
-      - name: Run Flake8 and Black
-        run: flake8 trackthenews tests && black --check trackthenews tests
+      - name: Run Ruff
+        run: poetry run ruff check && poetry run ruff format --check
 
   test:
     runs-on: ubuntu-latest

@@ -68,7 +68,7 @@ def configure_notifications(settings):
 def notify_error(platform, article, error):
     """Report a failure without allowing notification trouble to stop publishing."""
     message = f"{platform} failed for {article.url}: {type(error).__name__}: {error}"
-    logger.error(message, exc_info=True)
+    logger.error(message, exc_info=(type(error), error, error.__traceback__))
     webhook = config.get("notifications", {}).get("webhook") or {}
     if not webhook.get("url"):
         return
@@ -692,9 +692,7 @@ def main():
         except ImportError as e:
             blocklist_loaded = False
             print(f"Error loading blocklist: {e}")
-        except (
-            Exception
-        ) as e:  # noqa: BLE001 - blocklist.py is arbitrary user code; any error can be raised
+        except Exception as e:  # noqa: BLE001 - user blocklist code
             blocklist_loaded = False
             print(f"Unexpected error loading blocklist: {e}")
     else:
@@ -743,9 +741,7 @@ def main():
 
                 try:
                     article.check_for_matches(http_session, blocklist=blocklist_instance)
-                except (
-                    Exception
-                ) as e:  # noqa: BLE001 - can raise from requests, parsing, or user blocklist code
+                except Exception as e:  # noqa: BLE001 - parsing or user blocklist code
                     print(e)
                     print("Having trouble with that article. Skipping for now.")
 

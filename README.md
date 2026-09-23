@@ -128,12 +128,11 @@ poetry run trackthenews sample_project
 
 ### Linters
 
-CI checks code with Flake8 and Black. Run these checks locally:
+CI checks code with Ruff for linting and formatting. Run these checks locally:
 
 ```bash
-python -m pip install "black==25.1.0" "flake8==7.1.2"
-flake8 trackthenews tests
-black --check trackthenews tests
+poetry run ruff check
+poetry run ruff format --check
 ```
 
 We also provide the following makefile shortcuts to run these commands:

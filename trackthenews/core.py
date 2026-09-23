@@ -606,6 +606,11 @@ def main():
 
     parser.add_argument("-c", "--config", help="Run configuration process", action="store_true")
     parser.add_argument(
+        "--no-publish",
+        action="store_true",
+        help="Record newly found articles without posting to social media",
+    )
+    parser.add_argument(
         "dir",
         nargs="?",
         help="The directory to store or find the configuration files.",
@@ -740,7 +745,8 @@ def main():
 
                 if article.matching_grafs:
                     print("Got one!")
-                    publish_article(article)
+                    if not args.no_publish:
+                        publish_article(article)
 
                 conn.execute(
                     """insert into articles(

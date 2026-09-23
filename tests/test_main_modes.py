@@ -1,6 +1,7 @@
 """Exercise the CLI processing path without network requests or real publishers."""
 
 import json
+import sqlite3
 import sys
 from unittest.mock import Mock
 
@@ -39,3 +40,21 @@ def test_no_blocklist_still_checks_and_publishes(feed_run, monkeypatch):
     assert article.check_for_matches.call_args.kwargs["blocklist"] is None
     publish.assert_called_once_with(article)
 
+
+def test_no_publish_records_without_contacting_publishers(feed_run, monkeypatch):
+    folder, article = feed_run
+    monkeypatch.setattr(sys, "argv", ["trackthenews", "--no-publish", str(folder)])
+    publish = Mock()
+    monkeypatch.setattr(core, "publish_article", publish)
+
+    core.main()
+
+    publish.assert_not_called()
+    with sqlite3.connect(folder / "trackthenews.db") as connection:
+        row = connection.execute("SELECT url, tweeted, tooted FROM articles").fetchone()
+    assert row == (article.url, 0, 0)
+
+    # Recorded URLs are skipped on later normal runs as well.
+    monkeypatch.setattr(sys, "argv", ["trackthenews", str(folder)])
+    core.main()
+    publish.assert_not_called()

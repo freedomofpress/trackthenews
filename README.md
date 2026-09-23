@@ -46,6 +46,8 @@ If you designated a custom installation directory, or if you're running it from 
 trackthenews ~/foo/bar/path
 ```
 
+To import newly discovered articles into the database without publishing to X or Mastodon, run `trackthenews --no-publish ~/foo/bar/path`. Articles recorded by this run are treated as seen on subsequent runs; they will not be published later.
+
 Settings, such as the background color for new posts, the font, and the user-agent, are all located in `config.yaml`, in the designated configuration directory.
 
 Publisher failures are logged to stderr and do not stop the other publisher. To also send alerts to the local syslog socket and a webhook, add:

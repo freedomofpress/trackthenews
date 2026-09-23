@@ -669,6 +669,7 @@ def main():
     global blocklist_loaded
 
     blocklist_path = os.path.join(home, "blocklist.py")
+    blocklist_instance = None
 
     if os.path.exists(blocklist_path):
         try:

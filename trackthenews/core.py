@@ -5,6 +5,8 @@
 import argparse
 import datetime
 import json
+import logging
+import logging.handlers
 import os
 import sqlite3
 import sys
@@ -41,6 +43,66 @@ HTTP_TIMEOUT_SECONDS = 30
 IMAGE_FORMAT = "jpeg"
 IMAGE_FILENAME = f"image.{IMAGE_FORMAT}"
 IMAGE_MIME_TYPE = f"image/{IMAGE_FORMAT}"
+
+
+logger = logging.getLogger("trackthenews")
+
+
+def configure_notifications(settings):
+    """Send errors to stderr and optionally the local syslog socket."""
+    logger.handlers.clear()
+    logger.setLevel(logging.ERROR)
+    stream = logging.StreamHandler()
+    stream.setFormatter(logging.Formatter("%(levelname)s: %(message)s"))
+    logger.addHandler(stream)
+    if settings.get("syslog"):
+        address = settings.get("syslog_socket", "/dev/log")
+        try:
+            handler = logging.handlers.SysLogHandler(address=address)
+            handler.setFormatter(logging.Formatter("trackthenews: %(levelname)s %(message)s"))
+            logger.addHandler(handler)
+        except OSError:
+            logger.exception("Unable to configure syslog")
+
+
+def notify_error(platform, article, error):
+    """Report a failure without allowing notification trouble to stop publishing."""
+    message = f"{platform} failed for {article.url}: {type(error).__name__}: {error}"
+    logger.error(message, exc_info=True)
+    webhook = config.get("notifications", {}).get("webhook") or {}
+    if not webhook.get("url"):
+        return
+    kind = webhook.get("type", "custom").lower()
+    if kind == "slack":
+        payload = {"text": message}
+    elif kind == "discord":
+        payload = {"content": message}
+    elif kind == "custom":
+        payload = {
+            "event": "publish_failed",
+            "publisher": platform,
+            "article_url": article.url,
+            "error": str(error),
+            "message": message,
+        }
+    else:
+        logger.error("Unsupported webhook type %r", kind)
+        return
+    try:
+        response = requests.post(webhook["url"], json=payload, timeout=HTTP_TIMEOUT_SECONDS)
+        response.raise_for_status()
+    except requests.RequestException as exc:
+        # A webhook URL can contain credentials; never log the exception or URL.
+        logger.error("Unable to deliver %s webhook: %s", kind, type(exc).__name__)
+
+
+def publish_article(article):
+    """Try both publishers independently, even if one fails."""
+    for platform, publish in (("X", article.tweet), ("Mastodon", article.toot)):
+        try:
+            publish()
+        except Exception as exc:  # noqa: BLE001 - third-party clients may raise arbitrary errors
+            notify_error(platform, article, exc)
 
 
 class Article:
@@ -573,6 +635,8 @@ def main():
         config = yaml.full_load(f)
 
     global ua
+    configure_notifications(config.get("notifications", {}))
+
     ua = config["user-agent"]
 
     database = os.path.join(home, config["db"])
@@ -616,7 +680,9 @@ def main():
         except ImportError as e:
             blocklist_loaded = False
             print(f"Error loading blocklist: {e}")
-        except Exception as e:  # noqa: BLE001 - blocklist.py is arbitrary user code; any error can be raised
+        except (
+            Exception
+        ) as e:  # noqa: BLE001 - blocklist.py is arbitrary user code; any error can be raised
             blocklist_loaded = False
             print(f"Unexpected error loading blocklist: {e}")
     else:
@@ -665,14 +731,15 @@ def main():
 
                 try:
                     article.check_for_matches(http_session, blocklist=blocklist_instance)
-                except Exception as e:  # noqa: BLE001 - can raise from requests, parsing, or user blocklist code
+                except (
+                    Exception
+                ) as e:  # noqa: BLE001 - can raise from requests, parsing, or user blocklist code
                     print(e)
                     print("Having trouble with that article. Skipping for now.")
 
                 if article.matching_grafs:
                     print("Got one!")
-                    article.tweet()
-                    article.toot()
+                    publish_article(article)
 
                 conn.execute(
                     """insert into articles(

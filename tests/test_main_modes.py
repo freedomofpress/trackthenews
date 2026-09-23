@@ -6,6 +6,7 @@ import sys
 from unittest.mock import Mock
 
 import pytest
+import requests
 
 from trackthenews import core
 
@@ -58,3 +59,29 @@ def test_no_publish_records_without_contacting_publishers(feed_run, monkeypatch)
     monkeypatch.setattr(sys, "argv", ["trackthenews", str(folder)])
     core.main()
     publish.assert_not_called()
+
+
+def test_feed_redirect_failure_does_not_block_later_feed(feed_run, monkeypatch):
+    folder, article = feed_run
+    (folder / "rssfeeds.json").write_text(
+        json.dumps(
+            [
+                {"url": "https://example.org/bad-feed"},
+                {"url": "https://example.org/good-feed"},
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    def parse_feed(outlet, url, delicate, redirects, session):
+        if url.endswith("bad-feed"):
+            raise requests.TooManyRedirects("redirect loop")
+        return [article]
+
+    monkeypatch.setattr(core, "parse_feed", parse_feed)
+    monkeypatch.setattr(core, "publish_article", Mock())
+    monkeypatch.setattr(sys, "argv", ["trackthenews", str(folder)])
+
+    core.main()
+
+    article.check_for_matches.assert_called_once()

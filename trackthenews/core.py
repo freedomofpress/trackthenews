@@ -378,7 +378,13 @@ def parse_feed(outlet, url, delicate, redirects, http_session):
             continue
 
         article = Article(outlet, title, url, delicate, redirects)
-        article.canonicalize_url(http_session)
+        try:
+            article.canonicalize_url(http_session)
+        except requests.RequestException:
+            logger.exception(
+                "Unable to resolve article URL %s in feed %s; skipping entry", url, outlet
+            )
+            continue
 
         articles.append(article)
 
@@ -720,8 +726,8 @@ def main():
 
             try:
                 articles = parse_feed(outlet, url, delicate, redirects, http_session)
-            except requests.HTTPError as e:
-                print(f"Unable to fetch feed: {e}. Skipping for now.")
+            except requests.RequestException:
+                logger.exception("Unable to fetch feed %s; skipping for now", url)
                 continue
             deduped = []
 

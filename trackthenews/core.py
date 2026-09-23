@@ -764,7 +764,7 @@ def main():
                         article.url,
                         article.tweeted,
                         article.tooted,
-                        datetime.datetime.now(tz=datetime.UTC),
+                        datetime.datetime.now(tz=datetime.UTC).isoformat(sep=" "),
                     ),
                 )
 

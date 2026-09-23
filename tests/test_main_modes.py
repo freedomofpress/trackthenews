@@ -1,5 +1,6 @@
 """Exercise the CLI processing path without network requests or real publishers."""
 
+import datetime
 import json
 import sqlite3
 import sys
@@ -52,8 +53,11 @@ def test_no_publish_records_without_contacting_publishers(feed_run, monkeypatch)
 
     publish.assert_not_called()
     with sqlite3.connect(folder / "trackthenews.db") as connection:
-        row = connection.execute("SELECT url, tweeted, tooted FROM articles").fetchone()
-    assert row == (article.url, 0, 0)
+        row = connection.execute(
+            "SELECT url, tweeted, tooted, recorded_at FROM articles"
+        ).fetchone()
+    assert row[:3] == (article.url, 0, 0)
+    assert datetime.datetime.fromisoformat(row[3]).tzinfo == datetime.UTC
 
     # Recorded URLs are skipped on later normal runs as well.
     monkeypatch.setattr(sys, "argv", ["trackthenews", str(folder)])

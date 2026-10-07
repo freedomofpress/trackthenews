@@ -8,9 +8,10 @@ Changes
 * [Fixed] Initialize the optional blocklist correctly when no blocklist.py is present, so matched articles can still be processed.
 * [Fixed] Skip and log an article whose URL cannot be resolved, including redirect loops, while continuing through the feed. A feed fetch failure no longer prevents later feeds from being checked.
 * [Fixed] DeprecationWarning on SQLite's conn.execute() with use of datetime
+* [Fixed] An empty `notifications:` block in config.yaml no longer crashes at startup.
 * [Added] `--no-publish` to check feeds and record articles without posting to X or Mastodon. Recorded articles are treated as seen on later runs.
 * [Added] Optional syslog and webhook error notifications in config.yaml, with custom, Slack, and Discord webhook payloads. Notification failures do not interrupt publishing.
-* [Other] Added Ruff checks to CI and automated tests for publishing failures, notifications, the missing blocklist, `--no-publish`, and redirect failures.
+* [Other] Added Ruff checks to CI and automated tests for publishing failures, notifications, the missing blocklist, `--no-publish`, and redirect failures, plus offline end-to-end tests of the CLI against stubbed feeds and publishers. Warnings now fail the test suite.
 
 0.5
 ---

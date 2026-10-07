@@ -69,7 +69,7 @@ def notify_error(platform, article, error):
     """Report a failure without allowing notification trouble to stop publishing."""
     message = f"{platform} failed for {article.url}: {type(error).__name__}: {error}"
     logger.error(message, exc_info=(type(error), error, error.__traceback__))
-    webhook = config.get("notifications", {}).get("webhook") or {}
+    webhook = (config.get("notifications") or {}).get("webhook") or {}
     if not webhook.get("url"):
         return
     kind = webhook.get("type", "custom").lower()
@@ -646,7 +646,7 @@ def main():
         config = yaml.full_load(f)
 
     global ua
-    configure_notifications(config.get("notifications", {}))
+    configure_notifications(config.get("notifications") or {})
 
     ua = config["user-agent"]
 

@@ -7,9 +7,13 @@ python = ">=3.13,<4.0"
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.16.8"
 pytest = "^9.0.1"
+responses = "^0.26.3"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+filterwarnings = ["error"]
+markers = ["live: hits real feeds over the network; opt in with `-m live`"]
+addopts = "-m 'not live'"
 
 [tool.ruff]
 line-length = 100

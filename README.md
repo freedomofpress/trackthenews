@@ -126,6 +126,16 @@ poetry run trackthenews sample_project
 
 [poetry]: https://python-poetry.org/
 
+### Tests
+
+```bash
+just dev          # install poetry (via pipx) and dev dependencies; other targets run it first
+just test         # offline; all HTTP is served from tests/fixtures
+just integration  # smoke test against real feeds; needs network, never publishes
+```
+
+The end-to-end tests in `tests/test_e2e.py` run the CLI against stubbed feeds, X, Mastodon, and webhooks via [responses](https://github.com/getsentry/responses). Any unregistered request fails, so the suite never touches the network or needs credentials.
+
 ### Linters
 
 CI checks code with Ruff for linting and formatting. Run these checks locally:
@@ -135,11 +145,11 @@ poetry run ruff check
 poetry run ruff format --check
 ```
 
-We also provide the following makefile shortcuts to run these commands:
+We also provide the following [just](https://just.systems) recipes to run these commands:
 
 ```bash
-make ruff
-make ruff-fix  # Automatically fix issues
+just ruff
+just ruff-fix  # Automatically fix issues
 ```
 
 

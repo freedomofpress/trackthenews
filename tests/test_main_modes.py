@@ -4,6 +4,7 @@ import datetime
 import json
 import sqlite3
 import sys
+from contextlib import closing
 from unittest.mock import Mock
 
 import pytest
@@ -52,7 +53,7 @@ def test_no_publish_records_without_contacting_publishers(feed_run, monkeypatch)
     core.main()
 
     publish.assert_not_called()
-    with sqlite3.connect(folder / "trackthenews.db") as connection:
+    with closing(sqlite3.connect(folder / "trackthenews.db")) as connection:
         row = connection.execute(
             "SELECT url, tweeted, tooted, recorded_at FROM articles"
         ).fetchone()

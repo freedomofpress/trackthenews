@@ -1,0 +1,5 @@
+[
+    {"url": "https://www.propublica.org/feeds/propublica/main", "outlet": "ProPublica", "redirectLinks": true},
+    {"url": "https://theintercept.com/feed/?lang=en", "outlet": "The Intercept"},
+    {"url": "https://gizmodo.com/feed", "outlet": "Gizmodo"}
+]

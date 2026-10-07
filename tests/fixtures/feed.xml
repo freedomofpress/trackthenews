@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Example News</title>
+    <link>https://news.example/</link>
+    <description>Synthetic feed for trackthenews tests.</description>
+    <item>
+      <title>County withheld inspection reports for two years</title>
+      <link>https://news.example/2026/inspection-reports?utm_source=rss</link>
+    </item>
+    <item>
+      <title>Weekend forecast: rain, then sun</title>
+      <link>https://news.example/2026/weekend-forecast</link>
+    </item>
+    <item>
+      <title>A link that redirects to itself</title>
+      <link>https://news.example/redirect-loop</link>
+    </item>
+  </channel>
+</rss>

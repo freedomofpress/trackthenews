@@ -1,0 +1,12 @@
+db: trackthenews.db
+user-agent: trackthenews test suite
+color: "#F5F5F5"
+font: NotoSerif-Regular.ttf
+twitter:
+  api_key: dummy
+  api_secret: dummy
+  oauth_token: dummy
+  oauth_secret: dummy
+mastodon:
+  access_token: dummy
+  api_base_url: https://mastodon.example
